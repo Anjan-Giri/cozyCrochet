@@ -24,7 +24,7 @@ router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
       fs.unlink(filePath, (err) => {
         if (err) {
           console.log(err);
-          res.status(500).send("Error deleting file");
+          res.status(500).json("Error deleting file");
         }
       });
 
@@ -32,7 +32,7 @@ router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
     }
 
     const filename = req.file.filename;
-    const fileUrl = path.join("uploads", filename);
+    const fileUrl = path.join(filename);
 
     const user = {
       name: name,
@@ -166,6 +166,28 @@ router.get(
       res.status(200).json({
         success: true,
         user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+//logout
+
+router.get(
+  "/logout",
+  isAuthenticatedUser,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      res.cookie("token", null, {
+        expires: new Date(Date.now()),
+        httpOnly: true,
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Logged out Successfully",
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));

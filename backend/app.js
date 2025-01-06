@@ -17,12 +17,20 @@ app.use(
     credentials: true,
   })
 );
-
+// Add logging middleware to debug routes
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 //routes import
 
 const user = require("./controller/user");
+const shop = require("./controller/shop");
+const product = require("./controller/product");
 
 app.use("/api/v2/user", user);
+app.use("/api/v2/shop", shop);
+app.use("/api/v2/product", product);
 
 //config
 
