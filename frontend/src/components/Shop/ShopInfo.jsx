@@ -1,17 +1,41 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { backend_url, server } from "../../server";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const ShopInfo = ({ isOwner }) => {
   const { seller } = useSelector((state) => state.seller);
 
+  const dispatch = useDispatch(); // Initialize dispatch
+  const navigate = useNavigate(); // Initialize navigate
+
   const logoutHandler = async () => {
-    axios.get(`${server}/shop/logout`, {
-      withCredentials: true,
-    });
-    window.location.reload();
+    try {
+      // Dispatch logout request action
+      dispatch({ type: "LogoutRequest" });
+
+      const { data } = await axios.get(`${server}/shop/logout`, {
+        withCredentials: true,
+      });
+
+      if (data.success) {
+        // Clear redux store
+        dispatch({ type: "LogoutSuccess" });
+        // Navigate to home/login page
+        navigate("/login");
+      } else {
+        dispatch({
+          type: "LogoutFailed",
+          payload: "Logout failed. Please try again.",
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: "LogoutFailed",
+        payload: error.response?.data?.message || "Logout failed",
+      });
+    }
   };
 
   return (

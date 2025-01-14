@@ -68,7 +68,10 @@ const AllProducts = () => {
           <>
             <Link to={`/product/${product_name}`}>
               <Button>
-                <AiOutlineEye size={20} />
+                <AiOutlineEye
+                  size={20}
+                  className="flex justify-center items-center rounded-full w-8 h-8 py-2 text-blue-700 font-semibold hover:scale-125 duration-300"
+                />
               </Button>
             </Link>
           </>
@@ -84,11 +87,14 @@ const AllProducts = () => {
       sortable: false,
       renderCell: (params) => {
         return (
-          <>
+          <div className="flex items-center justify-center">
             <Button onClick={() => handleDelete(params.id)}>
-              <AiOutlineDelete size={20} />
+              <AiOutlineDelete
+                size={20}
+                className="bg-red-500 flex justify-center items-center rounded-full w-8 h-8 py-2 text-white font-semibold hover:bg-white hover:text-red-500 hover:scale-125 duration-300"
+              />
             </Button>
-          </>
+          </div>
         );
       },
     },
