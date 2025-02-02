@@ -9,26 +9,21 @@ import { deleteProduct, getAllProductsShop } from "../../redux/actions/product";
 import Loader from "../Layout/Loader";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
+import { deleteOffer, getAllOffersShop } from "../../redux/actions/offer";
 
-const AllProducts = () => {
-  const { products, isLoading } = useSelector((state) => state.products);
+const AllOffers = () => {
+  const { products, isLoading } = useSelector((state) => state.offers);
   const { seller } = useSelector((state) => state.seller);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllProductsShop(seller._id));
+    dispatch(getAllOffersShop(seller._id));
   }, [dispatch]);
 
-  const handleDelete = async (id) => {
-    try {
-      await dispatch(deleteProduct(id));
-
-      window.location.reload();
-      // dispatch(getAllProductsShop()); // or whatever action you use to fetch products
-    } catch (error) {
-      console.error("Error deleting product:", error);
-    }
+  const handleDelete = (id) => {
+    dispatch(deleteOffer(id));
+    window.location.reload();
   };
 
   const columns = [
@@ -138,4 +133,4 @@ const AllProducts = () => {
   );
 };
 
-export default AllProducts;
+export default AllOffers;

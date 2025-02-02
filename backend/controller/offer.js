@@ -1,16 +1,15 @@
 const express = require("express");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const router = express.Router();
-const Product = require("../model/product");
-const Shop = require("../model/shop");
-const ErrorHandler = require("../utils/ErrorHandler");
 const { upload } = require("../multer");
+const Shop = require("../model/shop");
+const router = express.Router();
+const Offer = require("../model/offer");
 const { isSeller } = require("../middleware/auth");
 const fs = require("fs");
 
-// create product
+// create offer
 router.post(
-  "/create-product",
+  "/create-offer",
   upload.array("images", 5),
   catchAsyncErrors(async (req, res, next) => {
     try {
@@ -45,10 +44,13 @@ router.post(
       }));
 
       // Create product with validated data
-      const productData = {
+      const offerData = {
         name: req.body.name,
         description: req.body.description,
         category: req.body.category,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        status: req.body.status || "active",
         tags: req.body.tags || "",
         originalPrice: req.body.originalPrice,
         discountPrice: req.body.discountPrice,
@@ -59,11 +61,11 @@ router.post(
         sold_out: 0,
       };
 
-      const product = await Product.create(productData);
+      const offerProduct = await Offer.create(offerData);
 
       res.status(201).json({
         success: true,
-        product,
+        offerProduct,
       });
     } catch (error) {
       console.error("Product creation error:", error);
@@ -74,16 +76,16 @@ router.post(
   })
 );
 
-// get all products of a shop
+// get all offers of a shop
 router.get(
-  "/get-all-products-shop/:id",
+  "/get-all-offers-shop/:id",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const products = await Product.find({ shopId: req.params.id });
+      const offers = await Offer.find({ shopId: req.params.id });
 
       res.status(201).json({
         success: true,
-        products,
+        offers,
       });
     } catch (error) {
       return next(new ErrorHandler(error, 400));
@@ -91,21 +93,22 @@ router.get(
   })
 );
 
-// delete product of a shop
+// delete offer of a shop
 router.delete(
-  "/delete-shop-product/:id",
+  "/delete-shop-offer/:id",
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
       const productId = req.params.id;
-      const productData = await Product.findById(productId);
 
-      if (!productData) {
-        return next(new ErrorHandler("Product not found", 404));
+      const offerData = await Offer.findById(productId);
+
+      if (!offerData) {
+        return next(new ErrorHandler("Offer not found", 500));
       }
 
       // Fix image deletion
-      productData.images.forEach((image) => {
+      offerData.images.forEach((image) => {
         // Extract filename from the url path
         const filename = image.url.split("/").pop(); // This gets just the filename
         const filePath = `uploads/${filename}`;
@@ -122,15 +125,14 @@ router.delete(
         }
       });
 
-      const product = await Product.findByIdAndDelete(productId);
+      const offer = await Offer.findByIdAndDelete(productId);
 
       res.status(200).json({
-        // Changed from 201 to 200 for consistency
         success: true,
-        message: "Product deleted successfully",
+        message: "Deleted Offer",
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 400));
+      return next(new ErrorHandler(error, 400));
     }
   })
 );

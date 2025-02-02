@@ -260,7 +260,7 @@ const menuItems = [
   },
   {
     id: 5,
-    label: "Offer",
+    label: "All Offers",
     path: "/dashboard-offer",
     icon: <BiSolidOffer size={25} />,
   },
