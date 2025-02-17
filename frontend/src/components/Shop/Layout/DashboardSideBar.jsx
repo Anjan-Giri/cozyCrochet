@@ -285,7 +285,7 @@ const menuItems = [
   {
     id: 9,
     label: "Discount Codes",
-    path: "/dashboard-coupouns",
+    path: "/dashboard-coupon",
     icon: <CiDiscount1 size={25} />,
   },
   {

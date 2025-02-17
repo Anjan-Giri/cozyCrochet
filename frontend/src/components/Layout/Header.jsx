@@ -18,14 +18,13 @@ import { categoriesData, productData } from "../../stat/data";
 import DropDown from "./DropDown.jsx";
 import Navbar from "./Navbar.jsx";
 
-import { backend_url } from "../../server.js";
+import { backend_url, server } from "../../server.js";
 
 import Cart from "../cart/Cart.jsx";
 import Wishlist from "../wishlist/Wishlist.jsx";
+import axios from "axios";
 
 const Header = ({ activeHeading }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchData, setSearchData] = useState(null);
   const [active, setActive] = useState(false);
 
   const [dropDown, setDropDown] = useState(false);
@@ -38,32 +37,52 @@ const Header = ({ activeHeading }) => {
 
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
 
-  // const { user, isAuthenticated, error } = useSelector((state) => state.user);
-
-  // useEffect(() => {
-  //   console.log(
-  //     "User:",
-  //     user,
-  //     "Authenticated:",
-  //     isAuthenticated,
-  //     "Error:",
-  //     error
-  //   );
-  // }, [user, isAuthenticated, error]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchData, setSearchData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   console.log(user);
+
+  // Debounce function to limit API calls
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        func.apply(null, args);
+      }, delay);
+    };
+  };
+
+  // Function to fetch search results
+  const fetchSearchResults = async (term) => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(`${server}/product/search/${term}`);
+      setSearchData(data.products);
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Debounced version of the search function
+  const debouncedSearch = debounce(fetchSearchResults, 500);
 
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
 
-    const filteredProducts =
-      productData &&
-      productData.filter((product) =>
-        product.name.toLowerCase().includes(term.toLowerCase())
-      );
-
-    setSearchData(filteredProducts);
+    if (term.length >= 2) {
+      // Only search if 2 or more characters
+      debouncedSearch(term);
+    } else {
+      setSearchData(null);
+    }
   };
 
   window.addEventListener("scroll", () => {
@@ -95,27 +114,32 @@ const Header = ({ activeHeading }) => {
               size={30}
               className="absolute right-2 top-1.5 cursor-pointer"
             />
+            {loading && (
+              <div className="w-full absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4 flex justify-center items-center">
+                Loading...
+              </div>
+            )}
             {searchData && searchData.length !== 0 ? (
               <div className="w-full absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4">
-                {searchData &&
-                  searchData.map((i, index) => {
-                    const d = i.name;
-
-                    const Product_name = d.replace(/\s+/g, "-");
-
-                    return (
-                      <Link to={`/product/${Product_name}`}>
-                        <div className="w-full flex items-start py-3">
-                          <img
-                            src={i.image_Url[0].url}
-                            alt="product"
-                            className="w-[40px] h-[40px] mr-[10px] rounded-md"
-                          />
-                        </div>
+                {searchData.map((i, index) => {
+                  const product_name = i.name.replace(/\s+/g, "-");
+                  return (
+                    <Link key={index} to={`/product/${product_name}`}>
+                      <div className="w-full flex items-start py-3">
+                        <img
+                          src={i.images[0].url} // Updated to match your data structure
+                          alt="product"
+                          className="w-[40px] h-[40px] mr-[10px] rounded-md"
+                        />
                         <h1 className="text-gray-800">{i.name}</h1>
-                      </Link>
-                    );
-                  })}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : searchTerm && !loading && searchData?.length === 0 ? (
+              <div className="w-full absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4 flex justify-center items-center">
+                No products found
               </div>
             ) : null}
           </div>

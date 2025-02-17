@@ -135,4 +135,42 @@ router.delete(
   })
 );
 
+// Add this to your product routes file
+router.get(
+  "/get-all-products",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const products = await Product.find();
+
+      res.status(200).json({
+        success: true,
+        products,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error, 400));
+    }
+  })
+);
+
+// Add this to your product routes file
+router.get(
+  "/search/:keyword",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const keyword = req.params.keyword;
+
+      const products = await Product.find({
+        name: { $regex: keyword, $options: "i" },
+      });
+
+      res.status(200).json({
+        success: true,
+        products,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error, 400));
+    }
+  })
+);
+
 module.exports = router;

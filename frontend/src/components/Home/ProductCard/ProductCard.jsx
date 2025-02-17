@@ -25,14 +25,14 @@ const ProductCard = ({ data }) => {
         <div className="flex justify-end"></div>
         <Link to={`/product/${product_name}`}>
           <img
-            src={`${data.image_Url[0].url}`}
+            src={data.images && data.images[0] ? data.images[0].url : ""}
             alt=""
             className="w-full h-[160px] object-contain"
           />
         </Link>
         <Link to="/">
           <h5 className="pt-3 text-[13px] text-[#b10012] pb-2">
-            {data.shop.name}
+            {data.shop?.name}
           </h5>
         </Link>
         <Link to={`/product/${product_name}`}>
@@ -51,14 +51,14 @@ const ProductCard = ({ data }) => {
           <div className="pt-3 pb-2 flex items-center justify-between">
             <div className="flex">
               <h5 className="font-bold text-[18px] text-[#690071] font-Roboto">
-                Nrs {data.price === 0 ? data.price : data.discount_price}
+                Nrs {data.discountPrice || data.originalPrice}
               </h5>
               <h4 className="font-[500] text-[13px] text-[#b03722] pl-3 mt-[-6px] line-through">
-                {data.price ? data.price + " Nrs" : null}
+                {data.discountPrice ? `${data.originalPrice} Nrs` : null}
               </h4>
             </div>
             <span className="font-[400] text-[15px] text-[#9b1a52]">
-              {data.total_sell} sold
+              {data.sold_out} sold
             </span>
           </div>
         </Link>

@@ -4,6 +4,7 @@ import CreateProduct from "../pages/Shop/CreateProduct.jsx";
 import ShopAllProducts from "../pages/Shop/ShopAllProducts.jsx";
 import CreateOfferPage from "../pages/Shop/CreateOfferPage.jsx";
 import AllOffersPage from "../pages/Shop/AllOffersPage.jsx";
+import AllCouponsPage from "../pages/Shop/AllCouponsPage.jsx";
 
 export {
   ShopHomePage,
@@ -12,4 +13,5 @@ export {
   ShopAllProducts,
   CreateOfferPage,
   AllOffersPage,
+  AllCouponsPage,
 };

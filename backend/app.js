@@ -28,11 +28,13 @@ const user = require("./controller/user");
 const shop = require("./controller/shop");
 const product = require("./controller/product");
 const offer = require("./controller/offer");
+const code = require("./controller/code");
 
 app.use("/api/v2/user", user);
 app.use("/api/v2/shop", shop);
 app.use("/api/v2/product", product);
 app.use("/api/v2/offer", offer);
+app.use("/api/v2/code", code);
 
 //config
 
