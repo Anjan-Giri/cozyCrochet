@@ -152,7 +152,7 @@ router.get(
   })
 );
 
-// Add this to your product routes file
+// get all products
 router.get(
   "/search/:keyword",
   catchAsyncErrors(async (req, res, next) => {

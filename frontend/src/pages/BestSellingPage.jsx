@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Layout/Header";
-import { useSearchParams } from "react-router-dom";
-import { productData } from "../stat/data";
 import ProductCard from "../components/Home/ProductCard/ProductCard";
 import Footer from "../components/Layout/Footer";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllProducts } from "../redux/actions/product";
 
 const BestSellingPage = () => {
   const [data, setData] = useState([]);
 
-  useEffect(() => {
-    const d =
-      productData && productData.sort((a, b) => b.total_sell - a.total_sell);
+  const dispatch = useDispatch();
+  const { allProducts } = useSelector((state) => state.products);
 
-    setData(d);
-  }, []);
+  useEffect(() => {
+    dispatch(getAllProducts());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const allProductsData = allProducts ? [...allProducts] : [];
+    const sortedData = allProductsData?.sort((a, b) => b.sold_out - a.sold_out);
+    // const firstFive = sortedData && sortedData.slice(0, 5);
+    // setData(firstFive);
+    setData(sortedData);
+  }, [allProducts]);
 
   return (
     <div>

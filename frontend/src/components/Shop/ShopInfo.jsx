@@ -1,34 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { backend_url, server } from "../../server";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import Loader from "../Layout/Loader";
 
 const ShopInfo = ({ isOwner }) => {
+  const [shopData, setShopData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   const { seller } = useSelector((state) => state.seller);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const dispatch = useDispatch(); // Initialize dispatch
-  const navigate = useNavigate(); // Initialize navigate
+  useEffect(() => {
+    const fetchShopData = async () => {
+      try {
+        setLoading(true);
+        if (isOwner && seller) {
+          setShopData(seller);
+        } else if (id) {
+          const { data } = await axios.get(
+            `${server}/shop/get-shop-info/${id}`
+          );
+          setShopData(data.shop);
+        }
+      } catch (error) {
+        console.error("Error fetching shop data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShopData();
+  }, [isOwner, seller, id]);
 
   const logoutHandler = async () => {
     try {
-      // Dispatch logout request action
       dispatch({ type: "LogoutRequest" });
-
       const { data } = await axios.get(`${server}/shop/logout`, {
         withCredentials: true,
       });
 
       if (data.success) {
-        // Clear redux store
         dispatch({ type: "LogoutSuccess" });
-        // Navigate to home/login page
         navigate("/login");
-      } else {
-        dispatch({
-          type: "LogoutFailed",
-          payload: "Logout failed. Please try again.",
-        });
       }
     } catch (error) {
       dispatch({
@@ -38,64 +55,109 @@ const ShopInfo = ({ isOwner }) => {
     }
   };
 
+  const getAvatarUrl = React.useCallback((avatar) => {
+    if (!avatar) return "/default-avatar.png";
+
+    // If the avatar is already a full URL
+    if (
+      typeof avatar === "string" &&
+      (avatar.startsWith("http://") || avatar.startsWith("https://"))
+    ) {
+      return avatar;
+    }
+
+    // If avatar is an object with url property
+    const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
+
+    // Remove any leading slashes and 'uploads/'
+    const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
+
+    // Construct the full URL using the backend_url
+    return `${backend_url}uploads/${cleanPath}`;
+  }, []);
+
+  // Memoize the avatar URL
+  const avatarUrl = React.useMemo(() => {
+    return imageError ? "/default-avatar.png" : getAvatarUrl(shopData?.avatar);
+  }, [shopData?.avatar, imageError, getAvatarUrl]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-[400px] flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading shop information...</div>
+      </div>
+    );
+  }
+
+  if (!shopData) {
+    return (
+      <div className="w-full h-[400px] flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="w-full py-6">
         <div className="w-full flex item-center justify-center">
           <img
-            src={`${backend_url}${seller?.avatar}`}
-            alt="shop"
+            src={avatarUrl}
+            alt={`${shopData.name}'s shop`}
             className="w-[150px] h-[150px] object-cover rounded-full"
+            onError={() => setImageError(true)}
+            loading="lazy"
           />
         </div>
         <h3 className="text-center py-2 text-[20px] text-[#550265] font-semibold">
-          {seller.name}
+          {shopData.name}
         </h3>
         <p className="text-[16px] text-[#3b0057] p-[10px] flex items-center">
-          {/* {seller.description} */} Lorem ipsum dolor sit amet consectetur
-          adipisicing elit. Quasi, corporis maiores repudiandae modi illum
-          tenetur consequuntur assumenda vel qui. Cupiditate, quisquam quidem
-          reiciendis quas aut at consequuntur inventore tempora dolorum.
+          {shopData.description || "No description available"}
         </p>
       </div>
-      <div className="flex items-center justify-between px-8">
+      <div className="flex items-center justify-between px-8 flex-wrap">
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Address</h5>
-          <h4 className="text-[#440044]">{seller.address}</h4>
+          <h4 className="text-[#440044]">{shopData.address}</h4>
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Phone Number</h5>
-          <h4 className="text-[#440044]">{seller.phoneNumber}</h4>
+          <h4 className="text-[#440044]">{shopData.phoneNumber}</h4>
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Total Products</h5>
-          <h4 className="text-[#440044]">
-            {/* {products && products.length} */} 10
-          </h4>
+          <h4 className="text-[#440044]">{shopData.totalProducts || 0}</h4>
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Ratings</h5>
-          <h4 className="text-[#440044]">{/* {averageRating}/5 */} 4</h4>
+          <h4 className="text-[#440044]">
+            {shopData.ratings || "No ratings yet"}
+          </h4>
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Joined On</h5>
-          <h4 className="text-[#440044]">{seller.createdAt.slice(0, 10)}</h4>
+          <h4 className="text-[#440044]">
+            {shopData.createdAt
+              ? new Date(shopData.createdAt).toLocaleDateString()
+              : "Not available"}
+          </h4>
         </div>
       </div>
       {isOwner && (
         <div className="py-3 px-8 flex flex-col items-end">
           <Link
             to="/settings"
-            className="w-[25%] bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center my-2"
+            className="w-full md:w-[25%] bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center my-2"
           >
             <span className="text-white">Edit Shop</span>
           </Link>
-          <Link
-            className="w-[25%] bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center my-2"
+          <button
+            className="w-full md:w-[25%] bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center my-2"
             onClick={logoutHandler}
           >
             <span className="text-white">Log Out</span>
-          </Link>
+          </button>
         </div>
       )}
     </div>

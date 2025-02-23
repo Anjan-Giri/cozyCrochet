@@ -4,28 +4,29 @@ import { useSearchParams } from "react-router-dom";
 import { productData } from "../stat/data";
 import ProductCard from "../components/Home/ProductCard/ProductCard";
 import Footer from "../components/Layout/Footer";
+import { useSelector } from "react-redux";
 
 const ProductPage = () => {
   const [data, setData] = useState([]);
 
-  const [searchParams] = useSearchParams();
-
-  const categoryData = searchParams.get("category");
+  const { allProducts } = useSelector((state) => state.products);
 
   useEffect(() => {
-    if (categoryData === null) {
-      const d =
-        productData && productData.sort((a, b) => a.total_sell - b.total_sell);
+    if (allProducts && allProducts.length > 0) {
+      // Map to track products per shop
+      const shopProducts = new Map();
 
-      setData(d);
-    } else {
-      const d =
-        productData &&
-        productData.filter((item) => item.category === categoryData);
+      // Group products by shop
+      allProducts.forEach((product) => {
+        if (!shopProducts.has(product.shopId)) {
+          shopProducts.set(product.shopId, []);
+        }
+        shopProducts.get(product.shopId).push(product);
+      });
 
-      setData(d);
+      setData(allProducts);
     }
-  }, []);
+  }, [allProducts]);
 
   return (
     <div>

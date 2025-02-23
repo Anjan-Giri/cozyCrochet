@@ -9,7 +9,7 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/", express.static("uploads"));
+app.use("/uploads", express.static("uploads"));
 // app.use(fileUpload({ useTempFiles: true }));
 app.use(
   cors({

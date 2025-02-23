@@ -11,6 +11,7 @@ const Shop = require("../model/shop.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors.js");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const sendShopToken = require("../utils/shopToken.js");
+const Product = require("../model/product.js");
 
 router.post("/create-shop", upload.single("avatar"), async (req, res, next) => {
   try {
@@ -190,6 +191,85 @@ router.get(
       res.status(201).json({
         success: true,
         message: "Logged out Successfully",
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// top shops
+router.get(
+  "/top-shops",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      // First get all shops
+      const shops = await Shop.find().select("name avatar");
+
+      // Get product counts for each shop using your existing schema
+      const shopsWithProducts = await Promise.all(
+        shops.map(async (shop) => {
+          // Count products for this shop using string ID
+          const productCount = await Product.countDocuments({
+            shopId: shop._id.toString(),
+          });
+
+          return {
+            _id: shop._id,
+            name: shop.name,
+            avatar: shop.avatar,
+            productCount: productCount,
+          };
+        })
+      );
+
+      // Sort by product count and get top shops
+      const topShops = shopsWithProducts
+        .sort((a, b) => b.productCount - a.productCount)
+        .slice(0, 3);
+
+      res.status(200).json({
+        success: true,
+        shops: topShops,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Get shop info by ID (public route)
+router.get(
+  "/get-shop-info/:id",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const shop = await Shop.findById(req.params.id);
+
+      if (!shop) {
+        return next(new ErrorHandler("Shop not found", 404));
+      }
+
+      // Count total products for this shop
+      const totalProducts = await Product.countDocuments({
+        shopId: shop._id.toString(),
+      });
+
+      // Create a shop object without sensitive information
+      const safeShopData = {
+        _id: shop._id,
+        name: shop.name,
+        description: shop.description,
+        address: shop.address,
+        phoneNumber: shop.phoneNumber,
+        avatar: shop.avatar,
+        ratings: shop.ratings,
+        createdAt: shop.createdAt,
+        totalProducts: totalProducts,
+      };
+
+      res.status(200).json({
+        success: true,
+        shop: safeShopData,
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));

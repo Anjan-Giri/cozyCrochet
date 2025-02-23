@@ -137,4 +137,20 @@ router.delete(
   })
 );
 
+// get all offers
+router.get(
+  "/get-all-offers",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const offers = await Offer.find();
+      res.status(200).json({
+        success: true,
+        offers,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error, 400));
+    }
+  })
+);
+
 module.exports = router;

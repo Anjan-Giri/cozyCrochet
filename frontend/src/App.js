@@ -95,6 +95,7 @@ import {
   CreateShopPage,
   SellerActivationPage,
   ShopLoginPage,
+  ShopPreviewPage,
 } from "./routes/Routes.js";
 
 import {
@@ -151,6 +152,7 @@ const App = () => {
         <Route path="/offers" element={<OfferPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/product/:name" element={<ProductDetailsPage />} />
+        <Route path="/shop-preview/:id" element={<ShopPreviewPage />} />
         <Route
           path="/profile"
           element={

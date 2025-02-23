@@ -52,6 +52,19 @@ export const offerReducer = createReducer(initialState, (builder) => {
       state.error = action.payload;
     })
 
+    // all offers
+    .addCase("getAllOffersRequest", (state) => {
+      state.isLoading = true;
+    })
+    .addCase("getAllOffersSuccess", (state, action) => {
+      state.isLoading = false;
+      state.products = action.payload;
+    })
+    .addCase("getAllOffersFailed", (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    })
+
     .addCase("clearErrors", (state) => {
       state.error = null;
     });

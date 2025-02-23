@@ -75,3 +75,24 @@ export const deleteOffer = (id) => async (dispatch) => {
     });
   }
 };
+
+// In your offer actions
+export const getAllOffers = () => async (dispatch) => {
+  try {
+    dispatch({
+      type: "getAllOffersRequest",
+    });
+
+    const { data } = await axios.get(`${server}/offer/get-all-offers`);
+
+    dispatch({
+      type: "getAllOffersSuccess",
+      payload: data.offers,
+    });
+  } catch (error) {
+    dispatch({
+      type: "getAllOffersFailed",
+      payload: error.response.data.message,
+    });
+  }
+};
