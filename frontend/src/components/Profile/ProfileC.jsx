@@ -23,10 +23,35 @@ const ProfileC = ({ active }) => {
     e.preventDefault();
   };
 
-  console.log(user);
+  const getAvatarUrl = () => {
+    if (!user || !user.avatar) return "/default-avatar.png";
 
-  console.log("Backend URL:", backend_url);
-  console.log("User avatar:", user?.avatar);
+    // If avatar is an object with a URL property
+    if (typeof user.avatar === "object" && user.avatar.url) {
+      return user.avatar.url.startsWith("http")
+        ? user.avatar.url
+        : `${backend_url
+            .replace("/api/v2", "")
+            .replace(/\/$/, "")}/uploads/${user.avatar.url.replace(
+            /^\/?(uploads\/)?/,
+            ""
+          )}`;
+    }
+
+    // If avatar is a string
+    if (typeof user.avatar === "string") {
+      return user.avatar.startsWith("http")
+        ? user.avatar
+        : `${backend_url
+            .replace("/api/v2", "")
+            .replace(/\/$/, "")}/uploads/${user.avatar.replace(
+            /^\/?(uploads\/)?/,
+            ""
+          )}`;
+    }
+
+    return "/default-avatar.png";
+  };
 
   return (
     <div className="w-full">
@@ -37,9 +62,12 @@ const ProfileC = ({ active }) => {
             <div className="flex items-center justify-center w-full">
               <div className="relative">
                 <img
-                  src={`${backend_url}${user?.avatar}`}
+                  src={getAvatarUrl()}
                   alt="avatar"
                   className="w-[100px] h-[100px] rounded-full object-cover border-2 border-[#ece3e3]"
+                  onError={(e) => {
+                    e.target.src = "/default-avatar.png";
+                  }}
                 />
                 <div className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]">
                   <AiOutlineCamera />

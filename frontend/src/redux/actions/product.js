@@ -76,7 +76,7 @@ export const deleteProduct = (id) => async (dispatch) => {
   }
 };
 
-// In your product actions file
+// get all products
 export const getAllProducts = () => async (dispatch) => {
   try {
     dispatch({
@@ -91,6 +91,36 @@ export const getAllProducts = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "getAllProductsFailed",
+      payload: error.response.data.message,
+    });
+  }
+};
+
+// update product
+export const updateProduct = (id, updateData) => async (dispatch) => {
+  try {
+    dispatch({
+      type: "updateProductRequest",
+    });
+
+    const config = {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    };
+
+    const { data } = await axios.put(
+      `${server}/product/update-product/${id}`,
+      updateData,
+      config
+    );
+
+    dispatch({
+      type: "updateProductSuccess",
+      payload: data.product,
+    });
+  } catch (error) {
+    dispatch({
+      type: "updateProductFailed",
       payload: error.response.data.message,
     });
   }

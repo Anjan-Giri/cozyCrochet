@@ -5,10 +5,10 @@ import { backend_url } from "../../server";
 import {
   AiFillHeart,
   AiOutlineHeart,
-  AiOutlineMessage,
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import Loader from "../Layout/Loader";
+import { FaShop } from "react-icons/fa6";
 
 const ProductDetails = ({ data }) => {
   const [count, setCount] = useState(1);
@@ -27,51 +27,29 @@ const ProductDetails = ({ data }) => {
     setCount(count + 1);
   };
 
-  const handleMessageSubmit = () => {
-    navigate("/inbox?conversation=3423fsdf322");
-  };
-
-  // Memoized function to get complete image URL
-  // const getImageUrl = React.useMemo(
-  //   () => (image) => {
-  //     if (!image) return "/no-image.png";
-  //     // Check if image is an object with url property or a direct string
-  //     const imagePath = typeof image === "object" ? image.url : image;
-  //     return imageError ? "/no-image.png" : `${backend_url}${imagePath}`;
-  //     console.log("Image path:", imagePath);
-  //     console.log("Full image URL:", `${backend_url}${imagePath}`);
-  //   },
-
-  //   [imageError]
-  // );
-
-  // Memoized function to get complete image URL
   const getImageUrl = React.useMemo(
     () => (image) => {
       if (!image) return "/no-image.png";
 
-      // Check if image is an object with url property or a direct string
+      // Get the image path, whether from object or string
       const imagePath = typeof image === "object" ? image.url : image;
 
-      // Log values before returning
-      console.log("Backend URL:", backend_url);
-      console.log("Image Path:", imagePath);
-      console.log("Full image URL:", `${backend_url}${imagePath}`);
+      // If it's already a full URL
+      if (imagePath.startsWith("http")) {
+        return imagePath;
+      }
 
-      return imageError ? "/no-image.png" : `${backend_url}${imagePath}`;
+      // Remove /api/v2 if present in backend_url and ensure no trailing slash
+      const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
+
+      // Clean the image path by removing any leading slash or 'uploads/'
+      const cleanImagePath = imagePath.replace(/^\/?(uploads\/)?/, "");
+
+      // Construct the final URL
+      return `${baseUrl}/uploads/${cleanImagePath}`;
     },
     [imageError]
   );
-
-  // Memoized function to get shop avatar URL
-  const getShopAvatarUrl = React.useMemo(() => {
-    if (!data?.shop?.avatar) return "/no-image.png";
-    const avatarPath =
-      typeof data.shop.avatar === "object"
-        ? data.shop.avatar.url
-        : data.shop.avatar;
-    return imageError ? "/no-image.png" : `${backend_url}${avatarPath}`;
-  }, [data?.shop?.avatar, imageError]);
 
   if (!data) {
     return (
@@ -180,7 +158,7 @@ const ProductDetails = ({ data }) => {
               {/* Shop Info */}
               <div className="flex items-center pt-10">
                 <img
-                  src={getShopAvatarUrl}
+                  src={getImageUrl(data.shop?.avatar)}
                   alt="shop avatar"
                   className="w-[70px] h-[70px] rounded-full mr-4"
                   onError={() => setImageError(true)}
@@ -194,14 +172,13 @@ const ProductDetails = ({ data }) => {
                     ({data.shop?.ratings || 0}) Ratings
                   </h2>
                 </div>
-                <div
-                  className="bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center"
-                  onClick={handleMessageSubmit}
-                >
-                  <span className="flex items-center justify-center">
-                    Contact Now <AiOutlineMessage className="ml-2" />
-                  </span>
-                </div>
+                <Link to={`/shop-preview/${data.shop._id}`}>
+                  <div className="bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center">
+                    <span className="flex items-center justify-center">
+                      Visit Now <FaShop className="ml-2" />
+                    </span>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>

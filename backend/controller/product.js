@@ -135,7 +135,7 @@ router.delete(
   })
 );
 
-// Add this to your product routes file
+// get all products
 router.get(
   "/get-all-products",
   catchAsyncErrors(async (req, res, next) => {
@@ -152,7 +152,7 @@ router.get(
   })
 );
 
-// get all products
+// all products search
 router.get(
   "/search/:keyword",
   catchAsyncErrors(async (req, res, next) => {
@@ -169,6 +169,95 @@ router.get(
       });
     } catch (error) {
       return next(new ErrorHandler(error, 400));
+    }
+  })
+);
+
+// update product
+router.put(
+  "/update-product/:id",
+  isSeller,
+  upload.array("images", 5),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const productId = req.params.id;
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
+      }
+
+      // Check if seller owns this product
+      if (product.shopId !== req.body.shopId && req.seller.role !== "Admin") {
+        return next(
+          new ErrorHandler("You are not authorized to update this product", 403)
+        );
+      }
+
+      // Validate required fields
+      if (!req.body.name || !req.body.description || !req.body.category) {
+        return next(new ErrorHandler("Please fill all required fields", 400));
+      }
+
+      // Update basic product data
+      product.name = req.body.name;
+      product.description = req.body.description;
+      product.category = req.body.category;
+      product.tags = req.body.tags || "";
+      product.originalPrice = req.body.originalPrice;
+      product.discountPrice = req.body.discountPrice;
+      product.stock = req.body.stock;
+
+      // Handle new images if provided
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map((file) => ({
+          public_id: `products/${file.filename}`,
+          url: `uploads/${file.filename}`,
+        }));
+
+        // If we have old images data from the request (for partial image updates)
+        if (req.body.oldImages) {
+          let oldImages = [];
+
+          try {
+            oldImages = JSON.parse(req.body.oldImages);
+          } catch (err) {
+            return next(new ErrorHandler("Invalid old images data", 400));
+          }
+
+          // Combine old and new images
+          product.images = [...oldImages, ...newImages];
+        } else {
+          // If no old images specified, replace with new ones
+          // First, delete the old image files
+          product.images.forEach((image) => {
+            const filename = image.url.split("/").pop();
+            const filePath = `uploads/${filename}`;
+
+            try {
+              if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+              }
+            } catch (err) {
+              console.log(`Error deleting file ${filePath}:`, err);
+            }
+          });
+
+          product.images = newImages;
+        }
+      }
+
+      // Save the updated product
+      await product.save();
+
+      res.status(200).json({
+        success: true,
+        product,
+      });
+    } catch (error) {
+      return next(
+        new ErrorHandler(error.message || "Error updating product", 500)
+      );
     }
   })
 );

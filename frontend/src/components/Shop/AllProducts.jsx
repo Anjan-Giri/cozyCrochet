@@ -1,17 +1,21 @@
-import React, { useEffect } from "react";
-import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
+import React, { useEffect, useState } from "react";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { deleteProduct, getAllProductsShop } from "../../redux/actions/product";
 import Loader from "../Layout/Loader";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
+import EditProduct from "./EditProduct";
 
 const AllProducts = () => {
   const { products, isLoading } = useSelector((state) => state.products);
   const { seller } = useSelector((state) => state.seller);
 
   const dispatch = useDispatch();
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     dispatch(getAllProductsShop(seller._id));
@@ -26,6 +30,19 @@ const AllProducts = () => {
     } catch (error) {
       console.error("Error deleting product:", error);
     }
+  };
+
+  const handleEditClick = (productId) => {
+    const product = products.find((p) => p._id === productId);
+    if (product) {
+      setSelectedProduct(product);
+      setEditModalVisible(true);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalVisible(false);
+    dispatch(getAllProductsShop(seller._id));
   };
 
   const columns = [
@@ -82,6 +99,25 @@ const AllProducts = () => {
       },
     },
     {
+      field: "Edit",
+      flex: 0.8,
+      minWidth: 100,
+      headerName: "",
+      sortable: false,
+      renderCell: (params) => {
+        return (
+          <div className="flex items-center justify-center">
+            <Button onClick={() => handleEditClick(params.id)}>
+              <AiOutlineEdit
+                size={20}
+                className="bg-green-500 flex justify-center items-center rounded-full w-8 h-8 py-2 text-white font-semibold hover:bg-white hover:text-green-500 hover:scale-125 duration-300"
+              />
+            </Button>
+          </div>
+        );
+      },
+    },
+    {
       field: "Delete",
       flex: 0.8,
       minWidth: 120,
@@ -112,7 +148,7 @@ const AllProducts = () => {
         name: item.name,
         price: "Nrs " + item.discountPrice,
         Stock: item.stock,
-        sold: 40,
+        sold: item.sold_out || 0,
       });
     });
 
@@ -129,6 +165,13 @@ const AllProducts = () => {
             disableSelectionOnClick
             autoHeight
           />
+          {selectedProduct && (
+            <EditProduct
+              visible={editModalVisible}
+              onClose={handleCloseEditModal}
+              product={selectedProduct}
+            />
+          )}
         </div>
       )}
     </>

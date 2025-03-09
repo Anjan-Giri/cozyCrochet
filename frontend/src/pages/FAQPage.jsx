@@ -334,7 +334,7 @@ import Footer from "../components/Layout/Footer";
 const FAQPage = () => {
   return (
     <div>
-      <Header activeHeading={5} />
+      <Header activeHeading={6} />
       <FAQ />
       <Footer />
     </div>

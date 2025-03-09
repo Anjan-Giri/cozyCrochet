@@ -40,6 +40,7 @@ const Header = ({ activeHeading }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   console.log(user);
 
@@ -93,6 +94,62 @@ const Header = ({ activeHeading }) => {
     }
   });
 
+  // Helper function to get proper image URL
+  const getImageUrl = (image) => {
+    if (!image) return "/no-image.png";
+    if (imageError) return "/no-image.png";
+
+    // Get the image path, whether from object or string
+    const imagePath = typeof image === "object" ? image.url : image;
+
+    // If it's already a full URL
+    if (imagePath.startsWith("http")) {
+      return imagePath;
+    }
+
+    // Remove /api/v2 if present in backend_url and ensure no trailing slash
+    const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
+
+    // Clean the image path by removing any leading slash or 'uploads/'
+    const cleanImagePath = imagePath.replace(/^\/?(uploads\/)?/, "");
+
+    // Construct the final URL
+    return `${baseUrl}/uploads/${cleanImagePath}`;
+  };
+
+  // First, update your getUserAvatarUrl function
+  const getUserAvatarUrl = () => {
+    // Return default avatar immediately if user or avatar doesn't exist
+    if (!user || !user.avatar) return "/default-avatar.png";
+
+    // Handle case where avatar might be an object with a URL property
+    if (typeof user.avatar === "object" && user.avatar.url) {
+      return user.avatar.url.startsWith("http")
+        ? user.avatar.url
+        : `${backend_url
+            .replace("/api/v2", "")
+            .replace(/\/$/, "")}/uploads/${user.avatar.url.replace(
+            /^\/?(uploads\/)?/,
+            ""
+          )}`;
+    }
+
+    // Handle case where avatar is a string
+    if (typeof user.avatar === "string") {
+      return user.avatar.startsWith("http")
+        ? user.avatar
+        : `${backend_url
+            .replace("/api/v2", "")
+            .replace(/\/$/, "")}/uploads/${user.avatar.replace(
+            /^\/?(uploads\/)?/,
+            ""
+          )}`;
+    }
+
+    // Fallback to default avatar for any other case
+    return "/default-avatar.png";
+  };
+
   return (
     <>
       <div className={`${styles.section}`}>
@@ -127,9 +184,14 @@ const Header = ({ activeHeading }) => {
                     <Link key={index} to={`/product/${product_name}`}>
                       <div className="w-full flex items-start py-3">
                         <img
-                          src={i.images[0].url} // Updated to match your data structure
+                          src={getImageUrl(i.images[0])}
                           alt="product"
-                          className="w-[40px] h-[40px] mr-[10px] rounded-md"
+                          className="w-[40px] h-[40px] mr-[10px] rounded-md object-cover"
+                          onError={(e) => {
+                            setImageError(true);
+                            e.target.src = "/no-image.png";
+                          }}
+                          loading="lazy"
                         />
                         <h1 className="text-gray-800">{i.name}</h1>
                       </div>
@@ -217,9 +279,13 @@ const Header = ({ activeHeading }) => {
                 {isAuthenticated ? (
                   <Link to="/profile">
                     <img
-                      src={`${backend_url}${user.avatar}`}
+                      src={getUserAvatarUrl()}
                       alt="avatar"
-                      className="w-[40px] h-[40px] rounded-full"
+                      className="w-[40px] h-[40px] rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "/no-image.png";
+                      }}
+                      loading="lazy"
                     />
                   </Link>
                 ) : (
@@ -307,9 +373,14 @@ const Header = ({ activeHeading }) => {
                         <Link to={`/product/${Product_name}`}>
                           <div className="w-full flex items-start py-3">
                             <img
-                              src={i.image_Url[0].url}
+                              src={getImageUrl(i.images[0])}
                               alt="product"
-                              className="w-[40px] h-[40px] mr-[10px] rounded-md"
+                              className="w-[40px] h-[40px] mr-[10px] rounded-md object-cover"
+                              onError={(e) => {
+                                setImageError(true);
+                                e.target.src = "/no-image.png";
+                              }}
+                              loading="lazy"
                             />
                           </div>
                           <h1 className="text-gray-800">{i.name}</h1>
@@ -333,9 +404,13 @@ const Header = ({ activeHeading }) => {
               {isAuthenticated ? (
                 <Link to="/profile">
                   <img
-                    src={`${backend_url}${user.avatar}`}
+                    src={getUserAvatarUrl()}
                     alt="avatar"
-                    className="w-[35px] h-[35px] rounded-full"
+                    className="w-[35px] h-[35px] rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "/no-image.png";
+                    }}
+                    loading="lazy"
                   />
                 </Link>
               ) : (

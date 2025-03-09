@@ -2,8 +2,8 @@ import { createReducer } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoading: false,
-  allProducts: [], // Add this
-  products: [], // Add this if not already present
+  allProducts: [],
+  products: [],
 };
 
 export const productReducer = createReducer(initialState, (builder) => {
@@ -54,7 +54,7 @@ export const productReducer = createReducer(initialState, (builder) => {
       state.error = action.payload;
     })
 
-    // Add these new cases
+    // all products
     .addCase("getAllProductsRequest", (state) => {
       state.isLoading = true;
     })
@@ -65,6 +65,26 @@ export const productReducer = createReducer(initialState, (builder) => {
     .addCase("getAllProductsFailed", (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+    })
+
+    // update product
+    .addCase("updateProductRequest", (state) => {
+      state.isLoading = true;
+      state.success = false;
+      state.error = null;
+    })
+    .addCase("updateProductSuccess", (state, action) => {
+      state.isLoading = false;
+      state.product = action.payload;
+      state.success = true;
+    })
+    .addCase("updateProductFailed", (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+      state.success = false;
+    })
+    .addCase("updateProductReset", (state) => {
+      state.success = false;
     })
 
     .addCase("clearErrors", (state) => {
