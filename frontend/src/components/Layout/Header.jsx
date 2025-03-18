@@ -42,6 +42,8 @@ const Header = ({ activeHeading }) => {
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const { cart } = useSelector((state) => state.cart);
+
   console.log(user);
 
   // Debounce function to limit API calls
@@ -270,7 +272,7 @@ const Header = ({ activeHeading }) => {
               >
                 <AiOutlineShoppingCart size={30} className="text-red-800" />
                 <span className="absolute right-0 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-                  0
+                  {cart && cart.length}
                 </span>
               </div>
             </div>
@@ -331,7 +333,7 @@ const Header = ({ activeHeading }) => {
         >
           <AiOutlineShoppingCart size={30} className="mx-3 text-red-800" />
           <span className="absolute right-2 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-            0
+            {cart && cart.length}
           </span>
         </div>
       </div>

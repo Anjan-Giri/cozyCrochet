@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import styles from "../../styles/styles";
-import { backend_url } from "../../server";
+import { backend_url, server } from "../../server";
 import {
   AiFillHeart,
   AiOutlineHeart,
@@ -9,6 +9,9 @@ import {
 } from "react-icons/ai";
 import Loader from "../Layout/Loader";
 import { FaShop } from "react-icons/fa6";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllProductsShop } from "../../redux/actions/product";
+import axios from "axios";
 
 const ProductDetails = ({ data }) => {
   const [count, setCount] = useState(1);
@@ -192,6 +195,36 @@ const ProductDetails = ({ data }) => {
 const ProductInfo = ({ data, getImageUrl }) => {
   const [active, setActive] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [shopProductCount, setShopProductCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchShopProductCount = async () => {
+      if (active === 3 && data?.shop?._id) {
+        try {
+          setLoading(true);
+
+          // Fetch all products for this specific shop
+          const response = await axios.get(
+            `${server}/product/get-all-products-shop/${data.shop._id}`
+          );
+
+          if (response.data.success) {
+            // Count the products manually
+            const productsArray = response.data.products || [];
+            setShopProductCount(productsArray.length);
+          }
+        } catch (error) {
+          console.error("Error fetching shop products:", error);
+          setShopProductCount(0);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchShopProductCount();
+  }, [active, data?.shop?._id]);
 
   return (
     <div className="py-6">
@@ -281,7 +314,8 @@ const ProductInfo = ({ data, getImageUrl }) => {
                 <h1 className="font-semibold pt-4 text-[#480043]">
                   Total Products:
                   <span className="font-medium text-[#530000] pl-2">
-                    {data.shop?.totalProducts || 0}
+                    {/* {(products && products.length) || 0} */}{" "}
+                    {loading ? "Loading..." : shopProductCount}
                   </span>
                 </h1>
                 <h1 className="font-semibold pt-4 text-[#480043]">

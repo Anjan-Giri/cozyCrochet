@@ -5,6 +5,7 @@ import { userReducer } from "./reducers/user.js";
 import { sellerReducer } from "./reducers/seller";
 import { productReducer } from "./reducers/product.js";
 import { offerReducer } from "./reducers/offer.js";
+import { cartReducer } from "./reducers/cart.js";
 
 const Store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const Store = configureStore({
     seller: sellerReducer,
     products: productReducer,
     offers: offerReducer,
+    cart: cartReducer,
   },
 });
 export default Store;
