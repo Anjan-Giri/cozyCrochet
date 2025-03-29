@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "../../styles/styles";
 import { backend_url, server } from "../../server";
 import {
@@ -12,13 +12,22 @@ import { FaShop } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllProductsShop } from "../../redux/actions/product";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { addToCart } from "../../redux/actions/cart";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../redux/actions/wishlist";
 
 const ProductDetails = ({ data }) => {
   const [count, setCount] = useState(1);
   const [click, setClick] = useState(false);
   const [select, setSelect] = useState(0);
   const [imageError, setImageError] = useState(false);
-  const navigate = useNavigate();
+
+  const { cart } = useSelector((state) => state.cart);
+  const { wishlist } = useSelector((state) => state.wishlist);
+  const dispatch = useDispatch();
 
   const decrementCount = () => {
     if (count > 1) {
@@ -53,6 +62,47 @@ const ProductDetails = ({ data }) => {
     },
     [imageError]
   );
+
+  const addToCartHandler = (id) => {
+    // Check if cart items exist and is an array
+    const itemExists = cart?.items
+      ? cart.items.some((i) => i.product._id === id)
+      : false;
+
+    if (itemExists) {
+      toast.error("Item already in cart");
+    } else {
+      if (data.stock < 1) {
+        toast.error("Product stock limit reached");
+      } else {
+        const cartData = { ...data, qty: 1 };
+        dispatch(addToCart(cartData));
+      }
+    }
+  };
+  useEffect(() => {
+    // Change from wishlist.find to checking if wishlist exists and has items
+    if (
+      wishlist &&
+      wishlist.items &&
+      wishlist.items.some((i) => i.product._id === data._id)
+    ) {
+      setClick(true);
+    } else {
+      setClick(false);
+    }
+  }, [wishlist, data._id]);
+
+  const addToWishlistHandler = (data) => {
+    setClick(!click);
+
+    dispatch(addToWishlist(data));
+  };
+  const removeFromWishlistHandler = (data) => {
+    setClick(!click);
+
+    dispatch(removeFromWishlist(data));
+  };
 
   if (!data) {
     return (
@@ -135,7 +185,7 @@ const ProductDetails = ({ data }) => {
                     <AiFillHeart
                       size={30}
                       className="cursor-pointer"
-                      onClick={() => setClick(!click)}
+                      onClick={() => removeFromWishlistHandler(data)}
                       color={click ? "red" : "#333"}
                       title="Remove from wishlist"
                     />
@@ -143,7 +193,7 @@ const ProductDetails = ({ data }) => {
                     <AiOutlineHeart
                       size={30}
                       className="cursor-pointer"
-                      onClick={() => setClick(!click)}
+                      onClick={() => addToWishlistHandler(data)}
                       color={click ? "red" : "#333"}
                       title="Add to wishlist"
                     />
@@ -153,6 +203,7 @@ const ProductDetails = ({ data }) => {
               {/* Add to Cart Button */}
               <div
                 className={`bg-gradient-to-r from-gray-800 to-gray-500 text-white font-bold shadow-lg hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-800 hover:to-gray-500 hover:text-gray-200 duration-300 ease-in-out mt-10 rounded flex items-center py-3 justify-center`}
+                onClick={() => addToCartHandler(data._id)}
               >
                 <span className="flex items-center justify-center">
                   Add to Cart <AiOutlineShoppingCart className="ml-2" />
@@ -160,17 +211,21 @@ const ProductDetails = ({ data }) => {
               </div>
               {/* Shop Info */}
               <div className="flex items-center pt-10">
-                <img
-                  src={getImageUrl(data.shop?.avatar)}
-                  alt="shop avatar"
-                  className="w-[70px] h-[70px] rounded-full mr-4"
-                  onError={() => setImageError(true)}
-                  loading="lazy"
-                />
+                <Link to={`/shop-preview/${data.shop._id}`}>
+                  <img
+                    src={getImageUrl(data.shop?.avatar)}
+                    alt="shop avatar"
+                    className="w-[70px] h-[70px] rounded-full mr-4"
+                    onError={() => setImageError(true)}
+                    loading="lazy"
+                  />
+                </Link>
                 <div className="pr-8">
-                  <h1 className="pt-3 text-[15px] pb-1 text-[#b10012]">
-                    {data.shop?.name}
-                  </h1>
+                  <Link to={`/shop-preview/${data.shop._id}`}>
+                    <h1 className="pt-3 text-[15px] pb-1 text-[#b10012]">
+                      {data.shop?.name}
+                    </h1>
+                  </Link>
                   <h2 className="pb-2 text-[13px]">
                     ({data.shop?.ratings || 0}) Ratings
                   </h2>
@@ -281,17 +336,22 @@ const ProductInfo = ({ data, getImageUrl }) => {
           <div className="w-full block 800px:flex p-4">
             <div className="w-full 800px:w-[50%]">
               <div className="flex items-center">
-                <img
-                  src={getImageUrl(data.shop?.avatar)}
-                  alt="shop avatar"
-                  className="w-[80px] h-[80px] rounded-full"
-                  onError={() => setImageError(true)}
-                  loading="lazy"
-                />
+                <Link to={`/shop-preview/${data.shop._id}`}>
+                  <img
+                    src={getImageUrl(data.shop?.avatar)}
+                    alt="shop avatar"
+                    className="w-[80px] h-[80px] rounded-full"
+                    onError={() => setImageError(true)}
+                    loading="lazy"
+                  />
+                </Link>
+
                 <div className="px-4">
-                  <h3 className="pt-2 text-[18px] pb-1 text-[#b10012]">
-                    {data.shop?.name}
-                  </h3>
+                  <Link to={`/shop-preview/${data.shop._id}`}>
+                    <h3 className="pt-2 text-[18px] pb-1 text-[#b10012]">
+                      {data.shop?.name}
+                    </h3>
+                  </Link>
                   <h5 className="pb-2 text-[14px]">
                     ({data.shop?.ratings || 0}) Ratings
                   </h5>

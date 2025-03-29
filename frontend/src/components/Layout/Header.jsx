@@ -43,6 +43,7 @@ const Header = ({ activeHeading }) => {
   const [imageError, setImageError] = useState(false);
 
   const { cart } = useSelector((state) => state.cart);
+  const { wishlist } = useSelector((state) => state.wishlist);
 
   console.log(user);
 
@@ -261,7 +262,7 @@ const Header = ({ activeHeading }) => {
               >
                 <AiOutlineHeart size={30} className="text-red-800" />
                 <span className="absolute right-0 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-                  0
+                  {wishlist?.items?.length || 0}
                 </span>
               </div>
             </div>
@@ -272,7 +273,7 @@ const Header = ({ activeHeading }) => {
               >
                 <AiOutlineShoppingCart size={30} className="text-red-800" />
                 <span className="absolute right-0 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-                  {cart && cart.length}
+                  {cart?.items?.length || 0}
                 </span>
               </div>
             </div>
@@ -333,7 +334,7 @@ const Header = ({ activeHeading }) => {
         >
           <AiOutlineShoppingCart size={30} className="mx-3 text-red-800" />
           <span className="absolute right-2 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-            {cart && cart.length}
+            {cart?.items?.length || 0}
           </span>
         </div>
       </div>
@@ -348,7 +349,7 @@ const Header = ({ activeHeading }) => {
             >
               <AiOutlineHeart size={30} className="text-red-800" />
               <span className="absolute right-54 top-0 rounded-full bg-red-300 w-4 h-4 top right font-semibold text-purple-800 text-xs leading-tight text-center">
-                0
+                {wishlist?.items?.length || 0}
               </span>
             </div>
             <div className="w-[70%] px-3 pb-2 pt-4 relative">

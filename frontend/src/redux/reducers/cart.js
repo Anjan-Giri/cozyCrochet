@@ -1,34 +1,47 @@
-import { createReducer } from "@reduxjs/toolkit";
-
 const initialState = {
-  cart:
-    localStorage.getItem("cartItems") &&
-    localStorage.getItem("cartItems") !== "undefined"
-      ? JSON.parse(localStorage.getItem("cartItems"))
-      : [],
+  cart: { items: [] },
+  error: null,
+  loading: false,
 };
 
-export const cartReducer = createReducer(initialState, (builder) => {
-  builder
-    .addCase("addToCart", (state, action) => {
-      const item = action.payload;
-      const existItem = state.cart.find((i) => i._id === item._id);
-      if (existItem) {
-        return {
-          ...state,
-          cart: state.cart.map((i) => (i._id === existItem._id ? item : i)),
-        };
-      } else {
-        return {
-          ...state,
-          cart: [...state.cart, item],
-        };
-      }
-    })
-    .addCase("removeFromCart", (state, action) => {
+export const cartReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case "ADD_TO_CART":
       return {
         ...state,
-        cart: state.cart.filter((i) => i._id !== action.payload),
+        cart: action.payload,
+        error: null,
       };
-    });
-});
+    case "FETCH_CART":
+      return {
+        ...state,
+        cart: action.payload || { items: [] },
+        error: null,
+      };
+    case "UPDATE_CART_ITEM":
+      return {
+        ...state,
+        cart: action.payload,
+        error: null,
+      };
+    case "REMOVE_FROM_CART":
+      return {
+        ...state,
+        cart: action.payload,
+        error: null,
+      };
+    case "CLEAR_CART":
+      return {
+        ...state,
+        cart: null,
+        error: null,
+      };
+    case "CART_ERROR":
+      return {
+        ...state,
+        error: action.payload,
+      };
+    default:
+      return state;
+  }
+};

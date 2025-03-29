@@ -29,12 +29,16 @@ const shop = require("./controller/shop");
 const product = require("./controller/product");
 const offer = require("./controller/offer");
 const code = require("./controller/code");
+const cart = require("./controller/cart");
+const wishlist = require("./controller/wishlist");
 
 app.use("/api/v2/user", user);
 app.use("/api/v2/shop", shop);
 app.use("/api/v2/product", product);
 app.use("/api/v2/offer", offer);
 app.use("/api/v2/code", code);
+app.use("/api/v2/cart", cart);
+app.use("/api/v2/wishlist", wishlist);
 
 //config
 
@@ -47,5 +51,13 @@ if (process.env.NODE_ENV !== "production") {
 //errorHandling
 
 app.use(ErrorHandler);
+
+// Add logging middleware to debug routes
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log("Headers:", req.headers);
+  console.log("Cookies:", req.cookies);
+  next();
+});
 
 module.exports = app;

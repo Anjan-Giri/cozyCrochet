@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { RxCross1 } from "react-icons/rx";
 import styles from "../../../styles/styles";
 import {
@@ -13,6 +13,10 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../redux/actions/cart";
 import { toast } from "react-toastify";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../redux/actions/wishlist";
 
 const ProductDetailsCard = ({ setOpen, data }) => {
   const [click, setClick] = useState(false);
@@ -20,6 +24,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const [imageError, setImageError] = useState(false);
 
   const { cart } = useSelector((state) => state.cart);
+  const { wishlist } = useSelector((state) => state.wishlist);
   const dispatch = useDispatch();
 
   const decrementCount = () => {
@@ -81,18 +86,45 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   }, [data.shop]);
 
   const addToCartHandler = (id) => {
-    const itemExists = cart && cart.find((i) => i._id === id);
+    // Check if cart items exist and is an array
+    const itemExists = cart?.items
+      ? cart.items.some((i) => i.product._id === id)
+      : false;
+
     if (itemExists) {
       toast.error("Item already in cart");
     } else {
-      if (data.stock < count) {
+      if (data.stock < 1) {
         toast.error("Product stock limit reached");
       } else {
-        const cartData = { ...data, qty: count };
+        const cartData = { ...data, qty: 1 };
         dispatch(addToCart(cartData));
-        toast.success("Item added to cart");
       }
     }
+  };
+
+  useEffect(() => {
+    // Change from wishlist.find to checking if wishlist exists and has items
+    if (
+      wishlist &&
+      wishlist.items &&
+      wishlist.items.some((i) => i.product._id === data._id)
+    ) {
+      setClick(true);
+    } else {
+      setClick(false);
+    }
+  }, [wishlist, data._id]);
+
+  const addToWishlistHandler = (data) => {
+    setClick(!click);
+
+    dispatch(addToWishlist(data));
+  };
+  const removeFromWishlistHandler = (data) => {
+    setClick(!click);
+
+    dispatch(removeFromWishlist(data));
   };
 
   return (
@@ -198,7 +230,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       <AiFillHeart
                         size={30}
                         className="cursor-pointer"
-                        onClick={() => setClick(!click)}
+                        onClick={() => removeFromWishlistHandler(data)}
                         color={click ? "red" : "#333"}
                         title="Remove from wishlist"
                       />
@@ -206,7 +238,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       <AiOutlineHeart
                         size={30}
                         className="cursor-pointer"
-                        onClick={() => setClick(!click)}
+                        onClick={() => addToWishlistHandler(data)}
                         color={click ? "red" : "#333"}
                         title="Add to wishlist"
                       />
