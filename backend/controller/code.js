@@ -1,54 +1,3 @@
-// const express = require("express");
-// const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-// const Code = require("../model/code");
-// const router = express.Router();
-// const ErrorHandler = require("../utils/ErrorHandler");
-// const { isSeller } = require("../middleware/auth");
-
-// //create code
-
-// router.post(
-//   "/create-code",
-//   isSeller,
-//   catchAsyncErrors(async (req, res, next) => {
-//     try {
-//       const codeExists = await code.find({ name: req.body.name });
-
-//       if (codeExists) {
-//         return next(new ErrorHandler("Code already exists", 400));
-//       }
-
-//       const code = await Code.create(req.body);
-
-//       res.status(201).json({
-//         success: true,
-//         code,
-//       });
-//     } catch (error) {
-//       return next(new ErrorHandler(error, 400));
-//     }
-//   })
-// );
-
-// // get all codes
-// router.get(
-//   "/get-code/:id",
-//   catchAsyncErrors(async (req, res, next) => {
-//     try {
-//       const codes = await Code.find({ shop: { _id: req.params.id } });
-
-//       res.status(201).json({
-//         success: true,
-//         codes,
-//       });
-//     } catch (error) {
-//       return next(new ErrorHandler(error, 400));
-//     }
-//   })
-// );
-
-// module.exports = router;
-
 const express = require("express");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const Code = require("../model/code");
@@ -140,4 +89,20 @@ router.delete(
   })
 );
 
+// get code value by its name
+router.get(
+  "/get-code-value/:name",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const code = await Code.findOne({ name: req.params.name });
+
+      res.status(200).json({
+        success: true,
+        code,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  })
+);
 module.exports = router;

@@ -218,6 +218,15 @@ const ProfileC = ({ active }) => {
       }
 
       {
+        // password
+        active === 4 && (
+          <div>
+            <ChangePassword />
+          </div>
+        )
+      }
+
+      {
         // track
         active === 5 && (
           <div>
@@ -498,6 +507,95 @@ const TrackOrder = () => {
         disableSelectionOnClick
         autoHeight
       />
+    </div>
+  );
+};
+
+const ChangePassword = () => {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const changePasswordHandler = async (e) => {
+    e.preventDefault();
+
+    await axios
+      .put(
+        `${server}/user/update-password`,
+        { oldPassword, newPassword, confirmPassword },
+        { withCredentials: true }
+      )
+      .then((res) => {
+        toast.success(res.data.message);
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+      });
+  };
+
+  return (
+    <div className="w-full px-5">
+      <h1 className="text-[25px] text-center font-semibold text-[#50007a] pb-4">
+        Change Password
+      </h1>
+      <div className="w-full">
+        <form
+          onSubmit={changePasswordHandler}
+          aria-required={true}
+          className="flex flex-col items-center"
+        >
+          <div className="w-full 800px:w-[50%] px-8 pb-3">
+            <label className="block text-sm font-medium text-[#50007a] py-2">
+              Enter Old Password
+            </label>
+            <input
+              type="password"
+              className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="w-full 800px:w-[50%] px-8 pb-3">
+            <label className="block text-sm font-medium text-[#50007a] py-2">
+              Enter New Password
+            </label>
+            <input
+              type="password"
+              className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="w-full 800px:w-[50%] px-8 pb-3">
+            <label className="block text-sm font-medium text-[#50007a] py-2">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-center">
+            <input
+              type="submit"
+              value="Update"
+              required
+              className="w-[210px] h-[50px] text-center text-[#50007a] border-2 font-semibold border-[#50007a] rounded-md cursor-pointer mt-10 hover:border-red-900 hover:text-red-900 hover:scale-105 duration-300"
+            />
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

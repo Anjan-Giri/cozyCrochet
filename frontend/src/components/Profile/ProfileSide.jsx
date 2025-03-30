@@ -1,7 +1,7 @@
 import React from "react";
 import { RxPerson } from "react-icons/rx";
 import { CiShoppingBasket } from "react-icons/ci";
-import { AiOutlineLogout, AiOutlineMessage } from "react-icons/ai";
+import { AiOutlineLogout } from "react-icons/ai";
 // import { MdOutlinePayments } from "react-icons/md";
 import { FaRegAddressCard } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -10,12 +10,13 @@ import { RiRefund2Line } from "react-icons/ri";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
+import { IoKeySharp } from "react-icons/io5";
 
 const menuItems = [
   { id: 1, label: "Profile", Icon: RxPerson },
   { id: 2, label: "Orders", Icon: CiShoppingBasket },
   { id: 3, label: "Refunds", Icon: RiRefund2Line },
-  { id: 4, label: "Inbox", Icon: AiOutlineMessage, route: "/inbox" },
+  { id: 4, label: "Password", Icon: IoKeySharp },
   { id: 5, label: "Tracking", Icon: GiVelociraptorTracks },
   //   { id: 6, label: "Payments", Icon: MdOutlinePayments },
   { id: 6, label: "Address", Icon: FaRegAddressCard },
@@ -30,9 +31,8 @@ const ProfileSide = ({ active, setActive }) => {
     if (id === 7) {
       logoutHandler();
     } else {
-      // For other items, set active and navigate if route exists
+      // For other items, set active
       setActive(id);
-      if (route) navigate(route);
     }
   };
 
@@ -51,11 +51,11 @@ const ProfileSide = ({ active, setActive }) => {
 
   return (
     <div className="w-full bg-white shadow-md p-6 pt-8 pb-1">
-      {menuItems.map(({ id, label, Icon, route }) => (
+      {menuItems.map(({ id, label, Icon }) => (
         <div
           key={id}
           className="flex items-center w-full mb-10 cursor-pointer text-[#4c035f]"
-          onClick={() => handleClick(id, route)}
+          onClick={() => handleClick(id)}
         >
           <Icon
             size={25}

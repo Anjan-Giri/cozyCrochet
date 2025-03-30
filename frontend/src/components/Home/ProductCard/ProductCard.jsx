@@ -40,26 +40,20 @@ const ProductCard = ({ data }) => {
     }
   }, [wishlist, data._id]);
 
-  // Create URL-friendly product name
   const product_name = data.name.replace(/\s+/g, "-").toLowerCase();
 
-  // Memoize the image URL to prevent recalculation on re-renders
   const imageUrl = useMemo(() => {
     if (!data.images?.[0]?.url) return "/no-image.png";
     if (imageError) return "/no-image.png";
 
-    // If it's already a full URL
     if (data.images[0].url.startsWith("http")) {
       return data.images[0].url;
     }
 
-    // Remove /api/v2 if present in backend_url
     const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Clean the image path
     const imagePath = data.images[0].url.replace(/^\/?(uploads\/)?/, "");
 
-    // Construct the final URL
     return `${baseUrl}/uploads/${imagePath}`;
   }, [data.images, imageError]);
 

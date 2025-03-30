@@ -5,7 +5,6 @@ const { upload } = require("../multer.js");
 const User = require("../model/user.js");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/mail.js");
@@ -373,6 +372,40 @@ router.delete(
       });
     } catch (error) {
       console.error("Delete address error:", error);
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+//password update
+
+router.put(
+  "/update-password",
+  isAuthenticatedUser,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user.id).select("+password");
+
+      const isPasswordMatched = await user.comparePassword(
+        req.body.oldPassword
+      );
+
+      if (!isPasswordMatched) {
+        return next(new ErrorHandler("Old password incorrect", 400));
+      }
+
+      if (req.body.newPassword !== req.body.confirmPassword) {
+        return next(new ErrorHandler("New passwords do not match", 400));
+      }
+
+      user.password = req.body.newPassword;
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (error) {
       return next(new ErrorHandler(error.message, 500));
     }
   })

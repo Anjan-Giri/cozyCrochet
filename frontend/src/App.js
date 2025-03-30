@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -18,6 +18,9 @@ import {
   SellerActivationPage,
   ShopLoginPage,
   ShopPreviewPage,
+  CheckoutPage,
+  PaymentPage,
+  OrderSuccessPage,
 } from "./routes/Routes.js";
 
 import {
@@ -39,9 +42,30 @@ import Store from "./redux/store.js";
 import SellerProtectedRoute from "./routes/SellerProtectedRoute.js";
 import { fetchCart } from "./redux/actions/cart.js";
 import { fetchWishlist } from "./redux/actions/wishlist.js";
+import { server } from "./server.js";
+import axios from "axios";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
 const App = () => {
-  // const dispatch = useDispatch();
+  const [stripeApikey, setStripeApikey] = useState("");
+
+  useEffect(() => {
+    async function getStripeApikey() {
+      try {
+        const { data } = await axios.get(`${server}/payment/stripeapikey`);
+        setStripeApikey(data.stripeApikey);
+        console.log("Stripe Api Key updated:", data.stripeApikey);
+      } catch (error) {
+        console.error("Error fetching Stripe API key:", error);
+      }
+    }
+
+    getStripeApikey();
+  }, []);
+
+  // This will still show empty initially, but the log inside useEffect will show the updated value
+  console.log("Current Stripe Api Key value:", stripeApikey);
 
   useEffect(() => {
     Store.dispatch(loadUser());
@@ -52,6 +76,13 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      {stripeApikey && (
+        <Elements stripe={loadStripe(stripeApikey)}>
+          <Routes>
+            <Route path="/payment" element={<PaymentPage />} />
+          </Routes>
+        </Elements>
+      )}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -75,6 +106,30 @@ const App = () => {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-success"
+          element={
+            <ProtectedRoute>
+              <OrderSuccessPage />
             </ProtectedRoute>
           }
         />
