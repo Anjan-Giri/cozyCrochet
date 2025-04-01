@@ -125,3 +125,24 @@ export const updateProduct = (id, updateData) => async (dispatch) => {
     });
   }
 };
+
+// get all categories
+export const getAllCategories = () => async (dispatch) => {
+  try {
+    dispatch({
+      type: "getAllCategoriesRequest",
+    });
+
+    const { data } = await axios.get(`${server}/product/get-all-categories`);
+
+    dispatch({
+      type: "getAllCategoriesSuccess",
+      payload: data.categories,
+    });
+  } catch (error) {
+    dispatch({
+      type: "getAllCategoriesFailed",
+      payload: error.response?.data?.message || "Failed to fetch categories",
+    });
+  }
+};

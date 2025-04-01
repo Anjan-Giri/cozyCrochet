@@ -87,6 +87,19 @@ export const productReducer = createReducer(initialState, (builder) => {
       state.success = false;
     })
 
+    // all categories
+    .addCase("getAllCategoriesRequest", (state) => {
+      state.isLoadingCategories = true;
+    })
+    .addCase("getAllCategoriesSuccess", (state, action) => {
+      state.isLoadingCategories = false;
+      state.categories = action.payload;
+    })
+    .addCase("getAllCategoriesFailed", (state, action) => {
+      state.isLoadingCategories = false;
+      state.categoriesError = action.payload;
+    })
+
     .addCase("clearErrors", (state) => {
       state.error = null;
     });

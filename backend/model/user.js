@@ -60,6 +60,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+  calendarEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CalendarEvent",
+    },
+  ],
   resetPasswordToken: String,
   resetPasswordTime: Date,
 });

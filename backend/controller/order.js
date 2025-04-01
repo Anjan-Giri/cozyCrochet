@@ -119,4 +119,59 @@ router.post(
   })
 );
 
+//get orders of user
+router.get(
+  "/get-user-orders/:userId",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const orders = await Order.find({ "user._id": req.params.userId }).sort({
+        createdAt: -1,
+      });
+
+      res.status(200).json({
+        success: true,
+        orders,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  })
+);
+
+//get all orders of seller
+router.get(
+  "/get-seller-orders/:shopId",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const shopId = req.params.shopId;
+      console.log("Looking for orders with shopId:", shopId);
+
+      // Try to find orders where shopId is directly in the document
+      let orders = await Order.find({ shopId: shopId }).sort({ createdAt: -1 });
+
+      // If no orders found, try alternative approach - checking if shopId is in the cart items
+      if (orders.length === 0) {
+        orders = await Order.find({
+          $or: [
+            { shopId: shopId },
+            { "cart.shopId": shopId },
+            { "cart.product.shopId": shopId },
+            { "cart.product.shop": shopId },
+          ],
+        }).sort({ createdAt: -1 });
+      }
+
+      console.log(`Found ${orders.length} orders for shop ${shopId}`);
+
+      res.status(200).json({
+        success: true,
+        orders,
+      });
+    } catch (error) {
+      console.error("Error in get-seller-orders:", error);
+      return next(new ErrorHandler(error.message, 400));
+    }
+  })
+);
+
 module.exports = router;

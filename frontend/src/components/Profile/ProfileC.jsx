@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { RxCross1 } from "react-icons/rx";
 import { Country, State } from "country-state-city";
+import { getAllUserOrders } from "../../redux/actions/order";
 
 const ProfileC = ({ active }) => {
   const { user, error, successMessage } = useSelector((state) => state.user);
@@ -247,18 +248,14 @@ const ProfileC = ({ active }) => {
 };
 
 const AllOrders = () => {
-  const orders = [
-    {
-      _id: "764dgsdhw743248932",
-      orderItems: [
-        {
-          name: "Crochet Teddy",
-        },
-      ],
-      totalPrice: 20000,
-      orderStatus: "Processing",
-    },
-  ];
+  const { user } = useSelector((state) => state.user);
+  const { orders } = useSelector((state) => state.order);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllUserOrders(user._id));
+  }, [dispatch]);
 
   const columns = [
     {
@@ -316,9 +313,9 @@ const AllOrders = () => {
 
   const rows = orders.map((item) => ({
     id: item._id,
-    itemsQty: item.orderItems.length,
+    itemsQty: item.cart.length,
     total: `Nrs ${item.totalPrice}`,
-    status: item.orderStatus,
+    status: item.status,
   }));
 
   return (
