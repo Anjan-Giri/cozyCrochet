@@ -34,8 +34,8 @@ export const navItems = [
 export const brandingData = [
   {
     id: 1,
-    title: "Free Shipping",
-    Description: "From all orders over Nrs 10000",
+    title: "Low Cost Shipping",
+    Description: "Get affordable shipping charges",
     icon: (
       <svg
         width="36"
@@ -85,7 +85,7 @@ export const brandingData = [
   {
     id: 2,
     title: "Offers & Discounts",
-    Description: "Save up to 25% off",
+    Description: "Save up to 65% off",
     icon: (
       <svg
         width="32"
@@ -160,7 +160,7 @@ export const brandingData = [
   {
     id: 5,
     title: "Secure Payments",
-    Description: "100% protected payments",
+    Description: "Don't worry about payment processes",
     icon: (
       <svg
         width="32"

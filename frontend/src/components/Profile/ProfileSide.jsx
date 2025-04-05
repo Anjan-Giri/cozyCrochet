@@ -15,12 +15,12 @@ import { IoKeySharp } from "react-icons/io5";
 const menuItems = [
   { id: 1, label: "Profile", Icon: RxPerson },
   { id: 2, label: "Orders", Icon: CiShoppingBasket },
-  { id: 3, label: "Refunds", Icon: RiRefund2Line },
-  { id: 4, label: "Password", Icon: IoKeySharp },
-  { id: 5, label: "Tracking", Icon: GiVelociraptorTracks },
+  // { id: 3, label: "Refunds", Icon: RiRefund2Line },
+  { id: 3, label: "Password", Icon: IoKeySharp },
+  { id: 4, label: "Tracking", Icon: GiVelociraptorTracks },
   //   { id: 6, label: "Payments", Icon: MdOutlinePayments },
-  { id: 6, label: "Address", Icon: FaRegAddressCard },
-  { id: 7, label: "Log Out", Icon: AiOutlineLogout },
+  { id: 5, label: "Address", Icon: FaRegAddressCard },
+  { id: 6, label: "Log Out", Icon: AiOutlineLogout },
 ];
 
 const ProfileSide = ({ active, setActive }) => {

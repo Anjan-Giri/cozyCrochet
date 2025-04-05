@@ -22,6 +22,8 @@ import {
   PaymentPage,
   OrderSuccessPage,
   CalendarPage,
+  UserOrderDetailsPage,
+  TrackOrderPage,
 } from "./routes/Routes.js";
 
 import {
@@ -33,6 +35,7 @@ import {
   AllOffersPage,
   AllCouponsPage,
   ShopAllOrders,
+  ShopOrderDetailsPage,
 } from "./routes/ShopRoutes.js";
 
 import { ToastContainer } from "react-toastify";
@@ -120,6 +123,22 @@ const App = () => {
           }
         />
         <Route
+          path="/user/order/:id"
+          element={
+            <ProtectedRoute>
+              <UserOrderDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/track-order/:id"
+          element={
+            <ProtectedRoute>
+              <TrackOrderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/checkout"
           element={
             <ProtectedRoute>
@@ -166,6 +185,14 @@ const App = () => {
           element={
             <SellerProtectedRoute>
               <ShopAllOrders />
+            </SellerProtectedRoute>
+          }
+        />
+        <Route
+          path="/order/:id"
+          element={
+            <SellerProtectedRoute>
+              <ShopOrderDetailsPage />
             </SellerProtectedRoute>
           }
         />

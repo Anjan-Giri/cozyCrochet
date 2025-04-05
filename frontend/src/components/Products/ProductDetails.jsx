@@ -18,6 +18,7 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../../redux/actions/wishlist";
+import Ratings from "./Ratings.jsx";
 
 const ProductDetails = ({ data }) => {
   const [count, setCount] = useState(1);
@@ -251,10 +252,12 @@ const ProductInfo = ({ data, getImageUrl }) => {
   const [active, setActive] = useState(1);
   const [imageError, setImageError] = useState(false);
   const [shopProductCount, setShopProductCount] = useState(0);
+  const [shopTotalReviews, setShopTotalReviews] = useState(0);
+  const [shopAverageRating, setShopAverageRating] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchShopProductCount = async () => {
+    const fetchShopData = async () => {
       if (active === 3 && data?.shop?._id) {
         try {
           setLoading(true);
@@ -265,20 +268,51 @@ const ProductInfo = ({ data, getImageUrl }) => {
           );
 
           if (response.data.success) {
-            // Count the products manually
+            // Count the products
             const productsArray = response.data.products || [];
             setShopProductCount(productsArray.length);
+
+            // Calculate total shop reviews by summing all product reviews
+            let reviewCount = 0;
+            let ratingSum = 0;
+            let ratingCount = 0;
+
+            productsArray.forEach((product) => {
+              // Count reviews
+              const productReviews = product.reviews
+                ? product.reviews.length
+                : 0;
+              reviewCount += productReviews;
+
+              // Sum ratings for average calculation
+              if (product.reviews && product.reviews.length > 0) {
+                product.reviews.forEach((review) => {
+                  if (review.rating) {
+                    ratingSum += review.rating;
+                    ratingCount++;
+                  }
+                });
+              }
+            });
+            setShopTotalReviews(reviewCount);
+
+            // Calculate average rating (with 1 decimal place)
+            const avgRating =
+              ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
+            setShopAverageRating(avgRating);
           }
         } catch (error) {
-          console.error("Error fetching shop products:", error);
+          console.error("Error fetching shop data:", error);
           setShopProductCount(0);
+          setShopTotalReviews(0);
+          setShopAverageRating(0);
         } finally {
           setLoading(false);
         }
       }
     };
 
-    fetchShopProductCount();
+    fetchShopData();
   }, [active, data?.shop?._id]);
 
   return (
@@ -327,8 +361,54 @@ const ProductInfo = ({ data, getImageUrl }) => {
         )}
 
         {active === 2 && (
-          <div className="w-full justify-center min-h-[45vh] flex items-center">
-            <p>No Reviews Yet</p>
+          <div
+            className="w-full min-h-[45vh] max-h-[45vh] flex flex-col py-3 items-start overflow-y-auto"
+            style={{
+              msOverflowStyle: "none",
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": { display: "none" },
+            }}
+          >
+            <div className="w-full mb-4">
+              {data && data.reviews && data.reviews.length > 0 ? (
+                data.reviews.map((item, index) => (
+                  <div
+                    key={index}
+                    className="w-full flex my-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100"
+                  >
+                    <img
+                      src={getImageUrl(item.user.avatar)}
+                      alt="User"
+                      className="w-[60px] h-[60px] rounded-full object-cover"
+                      onError={() => setImageError(true)}
+                      loading="lazy"
+                    />
+                    <div className="pl-4 flex-1">
+                      <div className="w-full flex items-center mb-2">
+                        <h1 className="font-medium text-[16px] mr-3 text-[#48004f]">
+                          {item.user.name}
+                        </h1>
+                        <Ratings rating={item.rating || data?.ratings} />
+                      </div>
+                      <p className="text-gray-700">{item.comment}</p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        {item.createdAt
+                          ? new Date(item.createdAt).toLocaleDateString()
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="w-full flex justify-center items-center bg-gray-50 rounded-lg p-8 mt-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-medium text-gray-700">
+                      No Reviews Yet
+                    </h3>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -353,7 +433,8 @@ const ProductInfo = ({ data, getImageUrl }) => {
                     </h3>
                   </Link>
                   <h5 className="pb-2 text-[14px]">
-                    ({data.shop?.ratings || 0}) Ratings
+                    ({loading ? "Loading..." : shopAverageRating} ★ (
+                    {shopTotalReviews} ratings))
                   </h5>
                 </div>
               </div>
@@ -381,7 +462,7 @@ const ProductInfo = ({ data, getImageUrl }) => {
                 <h1 className="font-semibold pt-4 text-[#480043]">
                   Total Reviews:{" "}
                   <span className="font-medium text-[#530000] pl-2">
-                    {data.shop?.totalReviews || 0}
+                    {loading ? "Loading..." : shopTotalReviews}
                   </span>
                 </h1>
                 <Link to={`/shop-preview/${data.shop?._id}`}>

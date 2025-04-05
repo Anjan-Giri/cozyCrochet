@@ -492,6 +492,7 @@ const Header = ({ activeHeading }) => {
 
   // Safely access Redux state
   const { isAuthenticated, user } = useSelector((state) => state.user || {});
+  const { isSeller } = useSelector((state) => state.seller || {});
   const { cart } = useSelector((state) => state.cart || {});
   const { wishlist } = useSelector((state) => state.wishlist || {});
   const productState = useSelector((state) => state.product || {});
@@ -681,7 +682,8 @@ const Header = ({ activeHeading }) => {
           <div className="w-[200px] h-[55px] bg-gradient-to-tr from-pink-700 to-purple-700 rounded-md flex items-center justify-center cursor-pointer hover:bg-gradient-to-tr hover:from-purple-700 hover:to-pink-700 hover:scale-105 duration-300">
             <Link to="/shop-create">
               <h1 className="text-white flex items-center">
-                Become a Seller <IoIosArrowForward className="ml-2" />{" "}
+                {isSeller ? "Dashboard" : "Become a Seller"}{" "}
+                <IoIosArrowForward className="ml-2" />{" "}
               </h1>
             </Link>
           </div>

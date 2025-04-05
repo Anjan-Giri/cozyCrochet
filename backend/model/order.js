@@ -4,6 +4,20 @@ const orderSchema = new mongoose.Schema({
   cart: {
     type: Array,
     required: true,
+    default: [],
+    validate: {
+      validator: function (cart) {
+        return cart.every((item) => {
+          return (
+            item._id &&
+            (item.product || item.productId) &&
+            item.quantity !== undefined &&
+            item.price !== undefined
+          );
+        });
+      },
+      message: "Invalid cart items structure",
+    },
   },
   shippingAddress: {
     type: Object,

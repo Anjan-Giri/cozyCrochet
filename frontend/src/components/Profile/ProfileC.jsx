@@ -11,7 +11,7 @@ import styles from "../../styles/styles";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import { MdOutlineTrackChanges } from "react-icons/md";
+import { MdOutlineTrackChanges, MdTrackChanges } from "react-icons/md";
 import {
   deleteUserAddress,
   updateUserAddress,
@@ -209,18 +209,10 @@ const ProfileC = ({ active }) => {
           </div>
         )
       }
-      {
-        // refund
-        active === 3 && (
-          <div>
-            <AllRefunds />
-          </div>
-        )
-      }
 
       {
         // password
-        active === 4 && (
+        active === 3 && (
           <div>
             <ChangePassword />
           </div>
@@ -229,7 +221,7 @@ const ProfileC = ({ active }) => {
 
       {
         // track
-        active === 5 && (
+        active === 4 && (
           <div>
             <TrackOrder />
           </div>
@@ -237,7 +229,7 @@ const ProfileC = ({ active }) => {
       }
       {
         // address
-        active === 6 && (
+        active === 5 && (
           <div>
             <Address />
           </div>
@@ -332,19 +324,15 @@ const AllOrders = () => {
   );
 };
 
-const AllRefunds = () => {
-  const orders = [
-    {
-      _id: "764dgsdhw743248932",
-      orderItems: [
-        {
-          name: "Crochet Teddy",
-        },
-      ],
-      totalPrice: 20000,
-      orderStatus: "Processing",
-    },
-  ];
+const TrackOrder = () => {
+  const { user } = useSelector((state) => state.user);
+  const { orders } = useSelector((state) => state.order);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllUserOrders(user._id));
+  }, [dispatch]);
 
   const columns = [
     {
@@ -358,6 +346,7 @@ const AllRefunds = () => {
       headerName: "Status",
       minWidth: 130,
       flex: 0.7,
+      // Remove cellClassName and use a custom cell rendering if needed
       renderCell: (params) => {
         const status = params.row.status;
         return (
@@ -383,15 +372,15 @@ const AllRefunds = () => {
     },
     {
       field: "actions",
-      headerName: "",
+      headerName: "Actions",
       flex: 1,
       minWidth: 150,
       sortable: false,
       renderCell: (params) => {
         return (
-          <Link to={`/user/order/${params.row.id}`}>
+          <Link to={`/user/track-order/${params.row.id}`}>
             <Button>
-              <AiOutlineArrowRight size={20} />
+              <MdTrackChanges size={20} />
             </Button>
           </Link>
         );
@@ -401,97 +390,9 @@ const AllRefunds = () => {
 
   const rows = orders.map((item) => ({
     id: item._id,
-    itemsQty: item.orderItems.length,
-    total: "Nrs " + item.totalPrice,
-    status: item.orderStatus, // Changed from item.status to item.orderStatus
-  }));
-
-  return (
-    <div className="pl-12 pt-4" style={{ height: 400, width: "100%" }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        disableSelectionOnClick
-        autoHeight
-      />
-    </div>
-  );
-};
-
-const TrackOrder = () => {
-  const orders = [
-    {
-      _id: "764dgsdhw743248932",
-      orderItems: [
-        {
-          name: "Crochet Teddy",
-        },
-      ],
-      totalPrice: 20000,
-      orderStatus: "Processing",
-    },
-  ];
-
-  const columns = [
-    {
-      field: "id",
-      headerName: "Order ID",
-      minWidth: 150,
-      flex: 0.7,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      minWidth: 130,
-      flex: 0.7,
-      renderCell: (params) => {
-        const status = params.row.status;
-        return (
-          <span className={status === "Delivered" ? "greenColor" : "redColor"}>
-            {status}
-          </span>
-        );
-      },
-    },
-    {
-      field: "itemsQty",
-      headerName: "Items Qty",
-      type: "number",
-      minWidth: 130,
-      flex: 0.7,
-    },
-    {
-      field: "total",
-      headerName: "Total",
-      type: "number",
-      minWidth: 130,
-      flex: 0.8,
-    },
-    {
-      field: "",
-      headerName: "",
-      flex: 1,
-      minWidth: 150,
-      sortable: false,
-      renderCell: (params) => {
-        return (
-          <Link to={`/user/order/${params.row.id}`}>
-            <Button>
-              <MdOutlineTrackChanges size={20} />
-            </Button>
-          </Link>
-        );
-      },
-    },
-  ];
-
-  const rows = orders.map((item) => ({
-    id: item._id,
-    itemsQty: item.orderItems.length,
-    total: "Nrs " + item.totalPrice,
-    status: item.orderStatus, // Changed from item.status to item.orderStatus
+    itemsQty: item.cart.length,
+    total: `Nrs ${item.totalPrice}`,
+    status: item.status,
   }));
 
   return (

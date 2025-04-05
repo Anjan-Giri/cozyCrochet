@@ -9,6 +9,9 @@ const ShopInfo = ({ isOwner }) => {
   const [shopData, setShopData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [shopProductCount, setShopProductCount] = useState(0);
+  const [shopRating, setShopRating] = useState("No ratings yet");
+  const [shopStatsLoading, setShopStatsLoading] = useState(false);
   const { seller } = useSelector((state) => state.seller);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -35,6 +38,58 @@ const ShopInfo = ({ isOwner }) => {
 
     fetchShopData();
   }, [isOwner, seller, id]);
+
+  useEffect(() => {
+    const fetchShopStats = async () => {
+      if (shopData?._id) {
+        try {
+          setShopStatsLoading(true);
+
+          // Fetch all products for this shop
+          const response = await axios.get(
+            `${server}/product/get-all-products-shop/${shopData._id}`
+          );
+
+          if (response.data.success) {
+            // Set total products count
+            const productsArray = response.data.products || [];
+            setShopProductCount(productsArray.length);
+
+            // Calculate average rating
+            let ratingSum = 0;
+            let ratingCount = 0;
+
+            productsArray.forEach((product) => {
+              if (product.reviews && product.reviews.length > 0) {
+                product.reviews.forEach((review) => {
+                  if (review.rating) {
+                    ratingSum += review.rating;
+                    ratingCount++;
+                  }
+                });
+              }
+            });
+
+            // Calculate average rating (with 1 decimal place)
+            if (ratingCount > 0) {
+              const avgRating = (ratingSum / ratingCount).toFixed(1);
+              setShopRating(`${avgRating} / 5 (${ratingCount} reviews)`);
+            } else {
+              setShopRating("No ratings yet");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching shop stats:", error);
+          setShopProductCount(0);
+          setShopRating("No ratings yet");
+        } finally {
+          setShopStatsLoading(false);
+        }
+      }
+    };
+
+    fetchShopStats();
+  }, [shopData]);
 
   const logoutHandler = async () => {
     try {
@@ -127,12 +182,14 @@ const ShopInfo = ({ isOwner }) => {
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Total Products</h5>
-          <h4 className="text-[#440044]">{shopData.totalProducts || 0}</h4>
+          <h4 className="text-[#440044]">
+            {shopStatsLoading ? "Loading..." : shopProductCount}
+          </h4>
         </div>
         <div className="p-3">
           <h5 className="font-[600] text-[#480000]">Ratings</h5>
           <h4 className="text-[#440044]">
-            {shopData.ratings || "No ratings yet"}
+            {shopStatsLoading ? "Loading..." : shopRating}
           </h4>
         </div>
         <div className="p-3">

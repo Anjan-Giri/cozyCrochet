@@ -10,7 +10,7 @@ const AllCouponsPage = () => {
 
       <div className="flex items-start justify-between w-full">
         <div className="w-[80px] 800px:w-[280px]">
-          <DashboardSideBar active={9} />
+          <DashboardSideBar active={7} />
         </div>
         <div className="w-full justify-center flex">
           <AllCoupons />
