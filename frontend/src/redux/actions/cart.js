@@ -123,3 +123,26 @@ export const removeFromCart = (productId) => async (dispatch) => {
     toast.error(errorMessage);
   }
 };
+
+// Clear entire cart
+export const clearCart = () => async (dispatch) => {
+  try {
+    const { data } = await axios.delete(`${server}/api/v2/cart/clear`, {
+      withCredentials: true,
+    });
+
+    dispatch({
+      type: "CLEAR_CART",
+      payload: data.cart,
+    });
+
+    toast.success("Cart cleared successfully");
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Error clearing cart";
+    dispatch({
+      type: "CART_ERROR",
+      payload: errorMessage,
+    });
+    toast.error(errorMessage);
+  }
+};

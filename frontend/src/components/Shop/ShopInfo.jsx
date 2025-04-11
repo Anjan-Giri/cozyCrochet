@@ -167,7 +167,7 @@ const ShopInfo = ({ isOwner }) => {
         <h3 className="text-center py-2 text-[20px] text-[#550265] font-semibold">
           {shopData.name}
         </h3>
-        <p className="text-[16px] text-[#3b0057] p-[10px] flex items-center">
+        <p className="text-[16px] text-[#3b0057] p-[10px] flex items-center justify-center">
           {shopData.description || "No description available"}
         </p>
       </div>

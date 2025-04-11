@@ -32,6 +32,25 @@ export const sellerReducer = createReducer(initialState, (builder) => {
       state.isLoading = false;
       state.error = action.payload;
     })
+
+    //update info
+    .addCase("updateSellerInfoRequest", (state) => {
+      state.isLoading = true;
+    })
+    .addCase("updateSellerInfoSuccess", (state, action) => {
+      state.isLoading = false;
+      state.seller = action.payload.shop;
+      state.successMessage = action.payload.successMessage;
+    })
+    .addCase("updateSellerInfoFail", (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload;
+    })
+
+    .addCase("clearMessages", (state) => {
+      state.successMessage = null;
+    })
+
     .addCase("clearErrors", (state) => {
       state.error = null;
     });

@@ -4,6 +4,7 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors.js");
 const ErrorHandler = require("../utils/ErrorHandler.js");
 const Order = require("../model/order.js");
 const Product = require("../model/product.js");
+const sendMail = require("../utils/mail.js");
 
 // create order
 router.post(
@@ -106,6 +107,84 @@ router.post(
               await product.save();
             }
           }
+        }
+      }
+
+      // Send order confirmation email
+      if (user && user.email) {
+        // Prepare order details for email
+        const orderDate = new Date().toLocaleDateString();
+        const orderItems = cart
+          .map((item) => {
+            const productName = item.product?.name || item.name || "Product";
+            const price = item.price || 0;
+            const quantity = item.quantity || 1;
+            return `${productName} x ${quantity} - Nrs. ${price * quantity}`;
+          })
+          .join("\n");
+
+        const shippingDetails = `
+          ${shippingAddress.address1 || ""}
+          ${shippingAddress.address2 || ""}
+          ${shippingAddress.city || ""}, ${shippingAddress.country || ""}
+          ${shippingAddress.zipCode || ""}
+        `;
+
+        const paymentMethod = paymentInfo?.type || "Online Payment";
+        const orderStatus = "Processing";
+
+        // Create email message
+        const emailMessage = `
+          Hello ${user.name},
+
+          Thank you for your order! We're excited to confirm that your order has been received and is being processed.
+
+          Order Details:
+          --------------
+          Order Date: ${orderDate}
+          Order Number: ${orders[0]?._id || "N/A"}
+          Payment Method: ${paymentMethod}
+          Order Status: ${orderStatus}
+
+          Products:
+          ---------
+          ${orderItems}
+
+          Shipping Details:
+          ----------------
+          ${shippingDetails}
+
+          Order Summary:
+          -------------
+          Subtotal: Nrs. ${overallSubtotal}
+          Shipping: Nrs. ${(overallSubtotal * 0.05).toFixed(2)}
+          ${
+            totalPrice !== overallSubtotal
+              ? `Discount: Nrs. ${(
+                  overallSubtotal -
+                  totalPrice +
+                  overallSubtotal * 0.05
+                ).toFixed(2)}`
+              : ""
+          }
+          Total: Nrs. ${totalPrice}
+
+          If you have any questions about your order, please don't hesitate to visit the website or contact us.
+
+          Thank you for shopping with us!
+        `;
+
+        // Send the email
+        try {
+          await sendMail({
+            email: user.email,
+            subject: "Order Confirmation",
+            message: emailMessage,
+          });
+          console.log(`Order confirmation email sent to ${user.email}`);
+        } catch (emailError) {
+          console.error("Failed to send order confirmation email:", emailError);
+          // Don't return an error, just log it - order creation should still succeed
         }
       }
 

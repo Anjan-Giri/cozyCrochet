@@ -172,3 +172,30 @@ export const deleteUserAddress = (id) => async (dispatch) => {
     });
   }
 };
+
+//update seller info
+export const updateSellerInfo =
+  (name, description, address, phoneNumber, zipCode) => async (dispatch) => {
+    try {
+      dispatch({ type: "updateSellerInfoRequest" });
+
+      const { data } = await axios.put(
+        `${server}/shop/update-seller`,
+        { name, description, address, phoneNumber, zipCode },
+        { withCredentials: true }
+      );
+
+      dispatch({
+        type: "updateSellerInfoSuccess",
+        payload: {
+          shop: data.shop,
+          successMessage: data.message,
+        },
+      });
+    } catch (error) {
+      dispatch({
+        type: "updateSellerInfoFail",
+        payload: error.response?.data?.message || "Update failed",
+      });
+    }
+  };

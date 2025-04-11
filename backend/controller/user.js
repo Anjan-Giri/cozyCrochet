@@ -350,7 +350,6 @@ router.put(
 );
 
 //delete address
-//delete address
 router.delete(
   "/delete-address/:addressId",
   isAuthenticatedUser,

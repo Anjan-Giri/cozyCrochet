@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
@@ -12,12 +12,14 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import { clearCart } from "../../redux/actions/cart";
 
 const Payment = () => {
   const [orderData, setOrderData] = useState([]);
   const [open, setOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const stripe = useStripe();
   const elements = useElements();
@@ -124,7 +126,8 @@ const Payment = () => {
               toast.success("Order placed successfully!");
               localStorage.setItem("cartItems", JSON.stringify([]));
               localStorage.setItem("latestOrder", JSON.stringify([]));
-              window.location.reload();
+
+              dispatch(clearCart());
             });
         }
       }
@@ -161,7 +164,8 @@ const Payment = () => {
         toast.success("Order successful!");
         localStorage.setItem("cartItems", JSON.stringify([]));
         localStorage.setItem("latestOrder", JSON.stringify([]));
-        window.location.reload();
+
+        dispatch(clearCart());
       });
   };
 

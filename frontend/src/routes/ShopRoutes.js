@@ -7,6 +7,7 @@ import AllOffersPage from "../pages/Shop/AllOffersPage.jsx";
 import AllCouponsPage from "../pages/Shop/AllCouponsPage.jsx";
 import ShopAllOrders from "../pages/Shop/ShopAllOrders.jsx";
 import ShopOrderDetailsPage from "../pages/Shop/ShopOrderDetailsPage.jsx";
+import ShopSettingsPage from "../pages/Shop/ShopSettingsPage.jsx";
 
 export {
   ShopHomePage,
@@ -18,4 +19,5 @@ export {
   AllCouponsPage,
   ShopAllOrders,
   ShopOrderDetailsPage,
+  ShopSettingsPage,
 };

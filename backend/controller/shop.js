@@ -277,4 +277,107 @@ router.get(
   })
 );
 
+//update shop avatar
+router.put(
+  "/update-shop-avatar",
+  isSeller,
+  upload.single("image"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      // Check if file was uploaded
+      if (!req.file) {
+        return next(new ErrorHandler("No image file provided", 400));
+      }
+
+      const userExist = await Shop.findById(req.seller._id);
+
+      // Check if user exists
+      if (!userExist) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+
+      console.log("Current user avatar:", userExist.avatar);
+      console.log("New file uploaded:", req.file);
+
+      // Handle existing avatar deletion with better error handling
+      if (userExist.avatar && userExist.avatar.url) {
+        try {
+          const existAvatarPath = `uploads/${userExist.avatar.public_id}`;
+          console.log("Attempting to delete:", existAvatarPath);
+
+          // Only attempt to delete if the file exists
+          if (fs.existsSync(existAvatarPath)) {
+            fs.unlinkSync(existAvatarPath);
+            console.log("Previous avatar deleted successfully");
+          } else {
+            console.log("Previous avatar file not found, continuing");
+          }
+        } catch (deleteErr) {
+          console.log("Error deleting previous avatar:", deleteErr);
+          // Continue with the update even if deletion fails
+        }
+      }
+
+      const fileUrl = path.join(req.file.filename);
+      console.log("New avatar file URL:", fileUrl);
+
+      const user = await Shop.findByIdAndUpdate(
+        req.seller._id,
+        {
+          avatar: {
+            url: fileUrl,
+            public_id: req.file.filename,
+          },
+        },
+        { new: true }
+      );
+
+      console.log("Seller updated successfully:", user);
+
+      // Send a response back to the client
+      res.status(200).json({
+        success: true,
+        message: "Avatar updated successfully",
+        user,
+      });
+    } catch (error) {
+      console.error("Avatar update error:", error);
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+//update seller info
+router.put(
+  "/update-seller",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { name, description, address, phoneNumber, zipCode } = req.body;
+
+      const shop = await Shop.findById(req.seller._id);
+
+      if (!shop) {
+        return next(new ErrorHandler("Shop not found", 400));
+      }
+
+      shop.name = name;
+      shop.description = description;
+      shop.address = address;
+      shop.phoneNumber = phoneNumber;
+      shop.zipCode = zipCode;
+
+      await shop.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Shop info updated successfully!",
+        shop,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
 module.exports = router;

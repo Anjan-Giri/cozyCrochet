@@ -186,4 +186,33 @@ router.post(
   })
 );
 
+// cart clear
+router.delete(
+  "/clear",
+  isAuthenticatedUser,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+
+      const cart = await Cart.findOne({ user: userId });
+
+      if (!cart) {
+        return next(new ErrorHandler("Cart not found", 404));
+      }
+
+      // Empty the items array
+      cart.items = [];
+      await cart.save();
+
+      res.status(200).json({
+        success: true,
+        cart,
+        message: "Cart cleared successfully",
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  })
+);
+
 module.exports = router;

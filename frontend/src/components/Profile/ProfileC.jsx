@@ -311,7 +311,7 @@ const AllOrders = () => {
   }));
 
   return (
-    <div className="pl-12 pt-4" style={{ height: 400, width: "100%" }}>
+    <div className="pl-12 pt-4" style={{ width: "100%" }}>
       <DataGrid
         rows={rows}
         columns={columns}

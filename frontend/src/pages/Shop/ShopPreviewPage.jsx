@@ -15,7 +15,7 @@ const ShopPreviewPage = () => {
             <ShopInfo isOwner={false} />
           </div>
           <div className="w-full flex items-center pt-10 justify-center rounded-[4px]">
-            <ShopProfileData isOwner={true} />
+            <ShopProfileData isOwner={false} />
           </div>
         </div>
       </div>

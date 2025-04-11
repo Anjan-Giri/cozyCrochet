@@ -204,6 +204,29 @@ const UserOrderDetails = () => {
     }
   };
 
+  const getProductImage = (item) => {
+    // Extract the image URL from various possible structures
+    const imageUrl =
+      (item.images && item.images[0]?.url) ||
+      (item.product?.images && item.product.images[0]?.url);
+
+    // If no image was found, return placeholder
+    if (!imageUrl) return "/placeholder-image.png";
+
+    // If the URL is already absolute (starts with http), use it directly
+    if (imageUrl.startsWith("http")) return imageUrl;
+
+    // Handle relative URLs by prefixing the server URL
+    // Remove /api/v2 from the server URL if it exists
+    const baseUrl = server.replace("/api/v2", "").replace(/\/$/, "");
+
+    // Clean up the image path by removing leading slashes and uploads/ if present
+    const imagePath = imageUrl.replace(/^\/?(uploads\/)?/, "");
+
+    // Return the complete URL
+    return `${baseUrl}/uploads/${imagePath}`;
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen py-8">
       <div className={`${styles.section} bg-white rounded-lg shadow-md p-6`}>
@@ -269,12 +292,8 @@ const UserOrderDetails = () => {
                   key={index}
                 >
                   <img
-                    src={
-                      (item.images && item.images[0]?.url) ||
-                      (item.product?.images && item.product.images[0]?.url) ||
-                      "/placeholder-image.png"
-                    }
-                    alt=""
+                    src={getProductImage(item)}
+                    alt="Product"
                     className="w-[80px] h-[80px] object-cover rounded-md"
                   />
                   <div className="ml-4 flex-grow">
@@ -342,15 +361,11 @@ const UserOrderDetails = () => {
                   {/* Product info with matching border style from other components */}
                   <div className="flex items-center p-4 border-2 border-[#50007a] rounded-md bg-white mb-6">
                     <img
-                      src={
-                        (selectedItem.images && selectedItem.images[0]?.url) ||
-                        (selectedItem.product?.images &&
-                          selectedItem.product.images[0]?.url) ||
-                        "/placeholder-image.png"
-                      }
-                      alt=""
+                      src={getProductImage(selectedItem)}
+                      alt="Product"
                       className="w-[80px] h-[80px] object-cover rounded-md border border-gray-200"
                     />
+
                     <div className="ml-4">
                       <h3 className="text-lg font-medium text-gray-800">
                         {selectedItem.name ||

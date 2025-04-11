@@ -25,6 +25,11 @@ const ProductDetails = ({ data }) => {
   const [click, setClick] = useState(false);
   const [select, setSelect] = useState(0);
   const [imageError, setImageError] = useState(false);
+  const [shopData, setShopData] = useState(null);
+  const [shopProductCount, setShopProductCount] = useState(0);
+  const [shopTotalReviews, setShopTotalReviews] = useState(0);
+  const [shopAverageRating, setShopAverageRating] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const { cart } = useSelector((state) => state.cart);
   const { wishlist } = useSelector((state) => state.wishlist);
@@ -48,15 +53,15 @@ const ProductDetails = ({ data }) => {
       const imagePath = typeof image === "object" ? image.url : image;
 
       // If it's already a full URL
-      if (imagePath.startsWith("http")) {
+      if (imagePath && imagePath.startsWith("http")) {
         return imagePath;
       }
 
-      // Remove /api/v2 if present in backend_url and ensure no trailing slash
-      const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
-
       // Clean the image path by removing any leading slash or 'uploads/'
-      const cleanImagePath = imagePath.replace(/^\/?(uploads\/)?/, "");
+      const cleanImagePath = imagePath
+        ? imagePath.replace(/^\/?(uploads\/)?/, "")
+        : "";
+      const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
       // Construct the final URL
       return `${baseUrl}/uploads/${cleanImagePath}`;
@@ -81,6 +86,7 @@ const ProductDetails = ({ data }) => {
       }
     }
   };
+
   useEffect(() => {
     // Change from wishlist.find to checking if wishlist exists and has items
     if (
@@ -96,14 +102,106 @@ const ProductDetails = ({ data }) => {
 
   const addToWishlistHandler = (data) => {
     setClick(!click);
-
     dispatch(addToWishlist(data));
   };
+
   const removeFromWishlistHandler = (data) => {
     setClick(!click);
-
     dispatch(removeFromWishlist(data));
   };
+
+  const getShopAvatarUrl = (avatar) => {
+    if (!avatar) return "/default-avatar.png";
+
+    // If the avatar is already a full URL
+    if (
+      typeof avatar === "string" &&
+      (avatar.startsWith("http://") || avatar.startsWith("https://"))
+    ) {
+      return avatar;
+    }
+
+    // If avatar is an object with url property
+    const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
+
+    if (!avatarPath) return "/default-avatar.png";
+
+    // Remove any leading slashes and 'uploads/'
+    const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
+
+    // Clean the backend_url to remove /api/v2 if present
+    const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
+
+    // Construct the full URL using the backend_url
+    return `${baseUrl}/uploads/${cleanPath}`;
+  };
+
+  // Fetch shop data and calculate ratings
+  useEffect(() => {
+    const fetchShopData = async () => {
+      if (data?.shop?._id) {
+        try {
+          setLoading(true);
+
+          // Fetch updated shop info
+          const shopResponse = await axios.get(
+            `${server}/shop/get-shop-info/${data.shop._id}`
+          );
+
+          if (shopResponse.data.success) {
+            setShopData(shopResponse.data.shop);
+          }
+
+          // Fetch all products for this specific shop to calculate ratings
+          const productsResponse = await axios.get(
+            `${server}/product/get-all-products-shop/${data.shop._id}`
+          );
+
+          if (productsResponse.data.success) {
+            // Count the products
+            const productsArray = productsResponse.data.products || [];
+            setShopProductCount(productsArray.length);
+
+            // Calculate total shop reviews by summing all product reviews
+            let reviewCount = 0;
+            let ratingSum = 0;
+            let ratingCount = 0;
+
+            productsArray.forEach((product) => {
+              // Count reviews
+              const productReviews = product.reviews
+                ? product.reviews.length
+                : 0;
+              reviewCount += productReviews;
+
+              // Sum ratings for average calculation
+              if (product.reviews && product.reviews.length > 0) {
+                product.reviews.forEach((review) => {
+                  if (review.rating) {
+                    ratingSum += review.rating;
+                    ratingCount++;
+                  }
+                });
+              }
+            });
+
+            setShopTotalReviews(reviewCount);
+
+            // Calculate average rating (with 1 decimal place)
+            const avgRating =
+              ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
+            setShopAverageRating(avgRating);
+          }
+        } catch (error) {
+          console.error("Error fetching shop data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchShopData();
+  }, [data?.shop?._id]);
 
   if (!data) {
     return (
@@ -210,26 +308,34 @@ const ProductDetails = ({ data }) => {
                   Add to Cart <AiOutlineShoppingCart className="ml-2" />
                 </span>
               </div>
-              {/* Shop Info */}
+              {/* Shop Info with Dynamic Ratings */}
               <div className="flex items-center pt-10">
                 <Link to={`/shop-preview/${data.shop._id}`}>
                   <img
-                    src={getImageUrl(data.shop?.avatar)}
+                    src={getShopAvatarUrl(
+                      shopData?.avatar || data.shop?.avatar
+                    )}
                     alt="shop avatar"
                     className="w-[70px] h-[70px] rounded-full mr-4"
-                    onError={() => setImageError(true)}
+                    onError={(e) => (e.target.src = "/default-avatar.png")}
                     loading="lazy"
                   />
                 </Link>
                 <div className="pr-8">
                   <Link to={`/shop-preview/${data.shop._id}`}>
                     <h1 className="pt-3 text-[15px] pb-1 text-[#b10012]">
-                      {data.shop?.name}
+                      {shopData?.name || data.shop?.name}
                     </h1>
                   </Link>
-                  <h2 className="pb-2 text-[13px]">
-                    ({data.shop?.ratings || 0}) Ratings
-                  </h2>
+                  <div className="flex items-center">
+                    <span className="text-[13px] mr-1">
+                      {loading ? "Loading..." : shopAverageRating} ★
+                    </span>
+                    <span className="text-[13px]">
+                      ({shopTotalReviews}{" "}
+                      {shopTotalReviews === 1 ? "Rating" : "Ratings"})
+                    </span>
+                  </div>
                 </div>
                 <Link to={`/shop-preview/${data.shop._id}`}>
                   <div className="bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center">
@@ -242,78 +348,33 @@ const ProductDetails = ({ data }) => {
             </div>
           </div>
         </div>
-        <ProductInfo data={data} getImageUrl={getImageUrl} />
+        <ProductInfo
+          data={data}
+          getImageUrl={getImageUrl}
+          getShopAvatarUrl={getShopAvatarUrl}
+          shopData={shopData}
+          shopProductCount={shopProductCount}
+          shopTotalReviews={shopTotalReviews}
+          shopAverageRating={shopAverageRating}
+          loading={loading}
+        />
       </div>
     </div>
   );
 };
 
-const ProductInfo = ({ data, getImageUrl }) => {
+const ProductInfo = ({
+  data,
+  getImageUrl,
+  getShopAvatarUrl,
+  shopData,
+  shopProductCount,
+  shopTotalReviews,
+  shopAverageRating,
+  loading,
+}) => {
   const [active, setActive] = useState(1);
   const [imageError, setImageError] = useState(false);
-  const [shopProductCount, setShopProductCount] = useState(0);
-  const [shopTotalReviews, setShopTotalReviews] = useState(0);
-  const [shopAverageRating, setShopAverageRating] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchShopData = async () => {
-      if (active === 3 && data?.shop?._id) {
-        try {
-          setLoading(true);
-
-          // Fetch all products for this specific shop
-          const response = await axios.get(
-            `${server}/product/get-all-products-shop/${data.shop._id}`
-          );
-
-          if (response.data.success) {
-            // Count the products
-            const productsArray = response.data.products || [];
-            setShopProductCount(productsArray.length);
-
-            // Calculate total shop reviews by summing all product reviews
-            let reviewCount = 0;
-            let ratingSum = 0;
-            let ratingCount = 0;
-
-            productsArray.forEach((product) => {
-              // Count reviews
-              const productReviews = product.reviews
-                ? product.reviews.length
-                : 0;
-              reviewCount += productReviews;
-
-              // Sum ratings for average calculation
-              if (product.reviews && product.reviews.length > 0) {
-                product.reviews.forEach((review) => {
-                  if (review.rating) {
-                    ratingSum += review.rating;
-                    ratingCount++;
-                  }
-                });
-              }
-            });
-            setShopTotalReviews(reviewCount);
-
-            // Calculate average rating (with 1 decimal place)
-            const avgRating =
-              ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
-            setShopAverageRating(avgRating);
-          }
-        } catch (error) {
-          console.error("Error fetching shop data:", error);
-          setShopProductCount(0);
-          setShopTotalReviews(0);
-          setShopAverageRating(0);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchShopData();
-  }, [active, data?.shop?._id]);
 
   return (
     <div className="py-6">
@@ -418,10 +479,12 @@ const ProductInfo = ({ data, getImageUrl }) => {
               <div className="flex items-center">
                 <Link to={`/shop-preview/${data.shop._id}`}>
                   <img
-                    src={getImageUrl(data.shop?.avatar)}
+                    src={getShopAvatarUrl(
+                      shopData?.avatar || data.shop?.avatar
+                    )}
                     alt="shop avatar"
-                    className="w-[80px] h-[80px] rounded-full"
-                    onError={() => setImageError(true)}
+                    className="w-[70px] h-[70px] rounded-full mr-4"
+                    onError={(e) => (e.target.src = "/default-avatar.png")}
                     loading="lazy"
                   />
                 </Link>
@@ -429,7 +492,7 @@ const ProductInfo = ({ data, getImageUrl }) => {
                 <div className="px-4">
                   <Link to={`/shop-preview/${data.shop._id}`}>
                     <h3 className="pt-2 text-[18px] pb-1 text-[#b10012]">
-                      {data.shop?.name}
+                      {shopData?.name || data.shop?.name}
                     </h3>
                   </Link>
                   <h5 className="pb-2 text-[14px]">
@@ -439,7 +502,9 @@ const ProductInfo = ({ data, getImageUrl }) => {
                 </div>
               </div>
               <p className="pt-4 font-Roboto text-[15px]">
-                {data.shop?.description || "No shop description available"}
+                {shopData?.description ||
+                  data.shop?.description ||
+                  "No shop description available"}
               </p>
             </div>
             <div className="w-full 800px:w-[50%] mt-6 800px:mt-0 800px: flex flex-col items-end">
@@ -447,15 +512,16 @@ const ProductInfo = ({ data, getImageUrl }) => {
                 <h1 className="font-semibold text-[#480043]">
                   Joined:{" "}
                   <span className="font-medium text-[#530000] pl-2">
-                    {data.shop?.createdAt
-                      ? new Date(data.shop.createdAt).toLocaleDateString()
+                    {shopData?.createdAt || data.shop?.createdAt
+                      ? new Date(
+                          shopData?.createdAt || data.shop.createdAt
+                        ).toLocaleDateString()
                       : "N/A"}
                   </span>
                 </h1>
                 <h1 className="font-semibold pt-4 text-[#480043]">
                   Total Products:
                   <span className="font-medium text-[#530000] pl-2">
-                    {/* {(products && products.length) || 0} */}{" "}
                     {loading ? "Loading..." : shopProductCount}
                   </span>
                 </h1>

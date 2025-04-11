@@ -2,11 +2,9 @@ import React from "react";
 import { RxPerson } from "react-icons/rx";
 import { CiShoppingBasket } from "react-icons/ci";
 import { AiOutlineLogout } from "react-icons/ai";
-// import { MdOutlinePayments } from "react-icons/md";
 import { FaRegAddressCard } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { GiVelociraptorTracks } from "react-icons/gi";
-import { RiRefund2Line } from "react-icons/ri";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
@@ -28,7 +26,7 @@ const ProfileSide = ({ active, setActive }) => {
 
   const handleClick = (id, route) => {
     // If it's the logout item (id 7), call logoutHandler
-    if (id === 7) {
+    if (id === 6) {
       logoutHandler();
     } else {
       // For other items, set active
@@ -50,7 +48,7 @@ const ProfileSide = ({ active, setActive }) => {
   };
 
   return (
-    <div className="w-full bg-white shadow-md p-6 pt-8 pb-1">
+    <div className="w-full h-full bg-white shadow-md p-6 pt-8 pb-1">
       {menuItems.map(({ id, label, Icon }) => (
         <div
           key={id}

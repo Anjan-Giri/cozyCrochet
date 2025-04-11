@@ -9,8 +9,10 @@ import {
   fetchCart,
   updateCartItemQuantity,
   removeFromCart,
+  clearCart,
 } from "../../redux/actions/cart";
 import { toast } from "react-toastify";
+import { AiOutlineDelete } from "react-icons/ai";
 
 const Cart = ({ setOpenCart }) => {
   const dispatch = useDispatch();
@@ -35,6 +37,12 @@ const Cart = ({ setOpenCart }) => {
       toast.error(error);
     }
   }, [error]);
+
+  const handleClearCart = () => {
+    if (window.confirm("Are you sure you want to empty your cart?")) {
+      dispatch(clearCart());
+    }
+  };
 
   // If loading, show loading state
   if (loading) {
@@ -83,11 +91,20 @@ const Cart = ({ setOpenCart }) => {
               />
             </div>
 
-            <div className="flex items-center p-4 sm:p-6">
-              <IoBagHandleOutline size={24} />
-              <h3 className="pl-4 text-[15px] sm:text-[17px] font-semibold">
-                {cart.items.length} {cart.items.length === 1 ? "Item" : "Items"}
-              </h3>
+            <div className="flex items-center justify-between p-4 sm:p-6">
+              <div className="flex items-center">
+                <IoBagHandleOutline size={24} />
+                <h3 className="pl-4 text-[15px] sm:text-[17px] font-semibold">
+                  {cart.items.length}{" "}
+                  {cart.items.length === 1 ? "Item" : "Items"}
+                </h3>
+              </div>
+
+              <AiOutlineDelete
+                size={30}
+                onClick={handleClearCart}
+                className=" text-red-800 text-sm font-medium cursor-pointer hover:scale-105 transition duration-300"
+              />
             </div>
 
             <div className="w-full border-t">

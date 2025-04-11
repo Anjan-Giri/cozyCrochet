@@ -33,7 +33,7 @@ export const cartReducer = (state = initialState, action) => {
     case "CLEAR_CART":
       return {
         ...state,
-        cart: null,
+        cart: action.payload || { items: [] },
         error: null,
       };
     case "CART_ERROR":
