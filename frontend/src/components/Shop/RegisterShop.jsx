@@ -1,14 +1,13 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { server } from "../../server";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
+import CrochetBackground from "../CrochetBackground";
 
 const RegisterShop = () => {
-  // const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
@@ -61,7 +60,8 @@ const RegisterShop = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
-      <div className="bg-white rounded-lg shadow-lg py-8 px-6 w-full max-w-2xl md:px-12">
+      <CrochetBackground />
+      <div className="bg-white rounded-lg shadow-lg py-8 px-6 w-full max-w-2xl md:px-12 z-10">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-purple-500">
             Become a Seller

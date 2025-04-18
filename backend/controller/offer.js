@@ -2,10 +2,12 @@ const express = require("express");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { upload } = require("../multer");
 const Shop = require("../model/shop");
+const Product = require("../model/product"); // Add product model import
 const router = express.Router();
 const Offer = require("../model/offer");
 const { isSeller } = require("../middleware/auth");
 const fs = require("fs");
+const ErrorHandler = require("../utils/ErrorHandler"); // Make sure to import ErrorHandler
 
 // create offer
 router.post(
@@ -14,6 +16,7 @@ router.post(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const shopId = req.body.shopId;
+      const productId = req.body.productId; // Get productId from request
 
       if (!shopId) {
         return next(new ErrorHandler("Shop ID is required", 400));
@@ -25,31 +28,66 @@ router.post(
         return next(new ErrorHandler("Shop not found", 404));
       }
 
+      // Find the original product if productId is provided
+      let originalProduct = null;
+      if (productId) {
+        originalProduct = await Product.findById(productId);
+        if (!originalProduct) {
+          return next(new ErrorHandler("Original product not found", 404));
+        }
+
+        // Verify the product belongs to the same shop
+        if (originalProduct.shopId.toString() !== shopId.toString()) {
+          return next(
+            new ErrorHandler("Product does not belong to this shop", 403)
+          );
+        }
+      }
+
       // Validate required fields
       if (!req.body.name || !req.body.description || !req.body.category) {
         return next(new ErrorHandler("Please fill all required fields", 400));
       }
 
-      // Handle image uploads
-      if (!req.files || req.files.length === 0) {
+      // Handle image uploads - use product images if no new images are uploaded and productId is provided
+      let images = [];
+
+      if (req.files && req.files.length > 0) {
+        // Format images according to the schema if new images are uploaded
+        images = req.files.map((file) => ({
+          public_id: `products/${file.filename}`,
+          url: `uploads/${file.filename}`,
+        }));
+      } else if (originalProduct) {
+        // Use original product images if no new images are uploaded
+        images = originalProduct.images;
+      } else {
         return next(
           new ErrorHandler("Please upload at least one product image", 400)
         );
       }
 
-      // Format images according to the schema
-      const images = req.files.map((file) => ({
-        public_id: `products/${file.filename}`, // Create a public_id using filename
-        url: `uploads/${file.filename}`, // Create URL path to the uploaded file
-      }));
+      // Validate offer dates
+      if (!req.body.startDate || !req.body.endDate) {
+        return next(
+          new ErrorHandler("Start and end dates are required for offers", 400)
+        );
+      }
 
-      // Create product with validated data
+      const startDate = new Date(req.body.startDate);
+      const endDate = new Date(req.body.endDate);
+
+      if (startDate >= endDate) {
+        return next(new ErrorHandler("End date must be after start date", 400));
+      }
+
+      // Create offer with validated data
       const offerData = {
         name: req.body.name,
         description: req.body.description,
         category: req.body.category,
-        startDate: req.body.startDate,
-        endDate: req.body.endDate,
+        startDate: startDate,
+        endDate: endDate,
         status: req.body.status || "active",
         tags: req.body.tags || "",
         originalPrice: req.body.originalPrice,
@@ -59,6 +97,7 @@ router.post(
         shopId: shopId,
         shop: shop,
         sold_out: 0,
+        productId: productId || null, // Store reference to original product
       };
 
       const offerProduct = await Offer.create(offerData);
@@ -68,9 +107,9 @@ router.post(
         offerProduct,
       });
     } catch (error) {
-      console.error("Product creation error:", error);
+      console.error("Offer creation error:", error);
       return next(
-        new ErrorHandler(error.message || "Error creating product", 500)
+        new ErrorHandler(error.message || "Error creating offer", 500)
       );
     }
   })
@@ -107,23 +146,26 @@ router.delete(
         return next(new ErrorHandler("Offer not found", 500));
       }
 
-      // Fix image deletion
-      offerData.images.forEach((image) => {
-        // Extract filename from the url path
-        const filename = image.url.split("/").pop(); // This gets just the filename
-        const filePath = `uploads/${filename}`;
+      // Only delete images if they're not shared with an original product
+      if (!offerData.productId) {
+        // These are unique offer images, safe to delete
+        offerData.images.forEach((image) => {
+          // Extract filename from the url path
+          const filename = image.url.split("/").pop(); // This gets just the filename
+          const filePath = `uploads/${filename}`;
 
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            console.log(`Successfully deleted: ${filePath}`);
-          } else {
-            console.log(`File not found: ${filePath}`);
+          try {
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+              console.log(`Successfully deleted: ${filePath}`);
+            } else {
+              console.log(`File not found: ${filePath}`);
+            }
+          } catch (err) {
+            console.log(`Error deleting file ${filePath}:`, err);
           }
-        } catch (err) {
-          console.log(`Error deleting file ${filePath}:`, err);
-        }
-      });
+        });
+      }
 
       const offer = await Offer.findByIdAndDelete(productId);
 

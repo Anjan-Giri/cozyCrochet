@@ -11,7 +11,7 @@ import styles from "../../styles/styles";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import { MdOutlineTrackChanges, MdTrackChanges } from "react-icons/md";
+import { MdTrackChanges } from "react-icons/md";
 import {
   deleteUserAddress,
   updateUserAddress,
@@ -273,7 +273,7 @@ const AllOrders = () => {
     },
     {
       field: "itemsQty",
-      headerName: "Items Qty",
+      headerName: "Items",
       type: "number",
       minWidth: 130,
       flex: 0.7,

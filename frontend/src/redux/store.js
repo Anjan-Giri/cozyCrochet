@@ -9,6 +9,7 @@ import { cartReducer } from "./reducers/cart.js";
 import { wishlistReducer } from "./reducers/wishlist.js";
 import { orderReducer } from "./reducers/order.js";
 import { calendarReducer } from "./reducers/calendar.js";
+import { adminReducer } from "./reducers/admin.js";
 
 const Store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ const Store = configureStore({
     wishlist: wishlistReducer,
     order: orderReducer,
     calendar: calendarReducer,
+    admin: adminReducer,
   },
 });
 export default Store;

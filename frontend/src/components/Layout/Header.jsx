@@ -12,7 +12,7 @@ import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { BiCategoryAlt } from "react-icons/bi";
 
 import { useDispatch, useSelector } from "react-redux";
-import logo from "../../assests/logo.webp";
+import logo from "../../assests/logo.png";
 import styles from "../../styles/styles";
 import DropDown from "./DropDown.jsx";
 import Navbar from "./Navbar.jsx";

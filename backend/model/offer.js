@@ -51,29 +51,6 @@ const offerSchema = new mongoose.Schema({
       },
     },
   ],
-  //   reviews: [
-  //     {
-  //       user: {
-  //         type: Object,
-  //       },
-  //       rating: {
-  //         type: Number,
-  //       },
-  //       comment: {
-  //         type: String,
-  //       },
-  //       productId: {
-  //         type: String,
-  //       },
-  //       createdAt: {
-  //         type: Date,
-  //         default: Date.now(),
-  //       },
-  //     },
-  //   ],
-  //   ratings: {
-  //     type: Number,
-  //   },
   shopId: {
     type: String,
     required: true,
@@ -85,6 +62,11 @@ const offerSchema = new mongoose.Schema({
   sold_out: {
     type: Number,
     default: 0,
+  },
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    default: null,
   },
   createdAt: {
     type: Date,

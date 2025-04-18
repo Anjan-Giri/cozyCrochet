@@ -180,7 +180,7 @@ router.get(
 
 router.get(
   "/logout",
-  isAuthenticatedUser,
+  isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
       res.cookie("seller_token", null, {

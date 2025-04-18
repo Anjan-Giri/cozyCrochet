@@ -68,46 +68,11 @@ const Checkout = () => {
   // shipping cost variable
   const shipping = subTotalPrice * 0.05;
 
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     const name = couponCode;
-
-  //     await axios.get(`${server}/code/get-code-value/${name}`).then((res) => {
-  //       const shopId = res.data.code?.shopId;
-  //       const couponCodeValue = res.data.code?.value;
-  //       if (res.data.code !== null) {
-  //         const isCouponValid =
-  //           cart && cart.items
-  //             ? cart.items.filter((item) => item.product.shopId === shopId)
-  //             : [];
-
-  //         if (isCouponValid.length === 0) {
-  //           toast.error("Coupon code is not valid for this shop");
-  //           setCouponCode("");
-  //         } else {
-  //           const eligiblePrice = isCouponValid.reduce(
-  //             (acc, item) => acc + item.qty * item.discountPrice,
-  //             0
-  //           );
-  //           const discountPrice = (eligiblePrice * couponCodeValue) / 100;
-  //           setDiscountPrice(discountPrice);
-  //           setCouponCodeData(res.data.code);
-  //           setCouponCode("");
-  //         }
-  //       }
-  //       if (res.data.couponCode === null) {
-  //         toast.error("Coupon code doesn't exists!");
-  //         setCouponCode("");
-  //       }
-  //     });
-  //   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const name = couponCode;
 
     try {
-      // Changed from coupon to code to match your backend route
       const response = await axios.get(`${server}/code/get-code-value/${name}`);
 
       if (response.data.success) {
@@ -117,17 +82,26 @@ const Checkout = () => {
           const shopId = codeData.shop;
           const codeValue = codeData.value;
 
-          // Check if the code is applicable for items in the cart
-          const eligibleItems =
-            cart && cart.items
-              ? cart.items.filter((item) => item.product.shopId === shopId)
-              : [];
+          // Check if this coupon is for specific products only
+          if (codeData.selectedProducts) {
+            // Filter items that match both shop and selected product name
+            const eligibleItems =
+              cart && cart.items
+                ? cart.items.filter(
+                    (item) =>
+                      item.product.shopId === shopId &&
+                      (codeData.selectedProducts === item.product.name ||
+                        codeData.selectedProducts === "all")
+                  )
+                : [];
 
-          if (eligibleItems.length === 0) {
-            toast.error("Coupon code is not valid for this shop");
-            setCouponCode("");
-          } else {
-            // Calculate discount based on eligible items
+            if (eligibleItems.length === 0) {
+              toast.error("This coupon is only valid for specific products");
+              setCouponCode("");
+              return;
+            }
+
+            // Calculate discount based on only eligible products
             const eligiblePrice = eligibleItems.reduce(
               (acc, item) =>
                 acc +
@@ -135,27 +109,31 @@ const Checkout = () => {
               0
             );
 
-            // Check if meets minimum amount requirement
-            if (codeData.minAmount > 0 && eligiblePrice < codeData.minAmount) {
-              toast.error(
-                `Minimum purchase of Nrs. ${codeData.minAmount} required for this code`
-              );
+            // Apply other checks and calculations
+            handleDiscountCalculation(eligiblePrice, codeData);
+          } else {
+            // Check for shop-wide coupon (any product from the shop)
+            const eligibleItems =
+              cart && cart.items
+                ? cart.items.filter((item) => item.product.shopId === shopId)
+                : [];
+
+            if (eligibleItems.length === 0) {
+              toast.error("Coupon code is not valid for this shop");
               setCouponCode("");
               return;
             }
 
-            // Calculate discount
-            let discount = (eligiblePrice * codeValue) / 100;
+            // Calculate based on all eligible shop items
+            const eligiblePrice = eligibleItems.reduce(
+              (acc, item) =>
+                acc +
+                item.quantity * (item.product.discountPrice || item.price),
+              0
+            );
 
-            // Apply maximum discount limit if set
-            if (codeData.maxAmount > 0 && discount > codeData.maxAmount) {
-              discount = codeData.maxAmount;
-            }
-
-            setDiscountPrice(discount);
-            setCouponCodeData(codeData);
-            setCouponCode("");
-            toast.success("Coupon code applied successfully!");
+            // Apply other checks and calculations
+            handleDiscountCalculation(eligiblePrice, codeData);
           }
         } else {
           toast.error("Coupon code doesn't exist!");
@@ -167,6 +145,31 @@ const Checkout = () => {
       toast.error("Failed to apply coupon code. Please try again.");
       setCouponCode("");
     }
+  };
+
+  const handleDiscountCalculation = (eligiblePrice, codeData) => {
+    // Check if meets minimum amount requirement
+    if (codeData.minAmount > 0 && eligiblePrice < codeData.minAmount) {
+      toast.error(
+        `Minimum purchase of Nrs. ${codeData.minAmount} required for this code`
+      );
+      setCouponCode("");
+      return;
+    }
+
+    // Calculate discount
+    let discount = (eligiblePrice * codeData.value) / 100;
+
+    // Apply maximum discount limit if set
+    if (codeData.maxAmount > 0 && discount > codeData.maxAmount) {
+      discount = codeData.maxAmount;
+      toast.info(`Maximum discount of Nrs. ${codeData.maxAmount} applied`);
+    }
+
+    setDiscountPrice(discount);
+    setCouponCodeData(codeData);
+    setCouponCode("");
+    toast.success("Coupon code applied successfully!");
   };
 
   const discountPercentage = couponCodeData ? discountPrice : "";

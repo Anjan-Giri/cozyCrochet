@@ -1,7 +1,6 @@
 // import React, { useEffect, useState } from "react";
-// import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
+// import { AiOutlineDelete } from "react-icons/ai";
 // import { useDispatch, useSelector } from "react-redux";
-// import { Link } from "react-router-dom";
 // import Loader from "../Layout/Loader";
 // import { DataGrid } from "@mui/x-data-grid";
 // import { Button } from "@mui/material";
@@ -16,7 +15,7 @@
 //   const [name, setName] = useState("");
 //   const [isLoading, setIsLoading] = useState(false);
 //   const [coupons, setCoupons] = useState([]);
-//   const [minAmount, setMinAmount] = useState(null);
+//   const [minAmount, setMinAmount] = useState(null); // Fixed typo
 //   const [maxAmount, setMaxAmount] = useState(null);
 //   const [selectedProducts, setSelectedProducts] = useState(null);
 //   const [value, setValue] = useState(null);
@@ -26,57 +25,79 @@
 //   const dispatch = useDispatch();
 
 //   useEffect(() => {
-//     setIsLoading(true);
-//     axios
-//       .get(`${server}/code/get-code/${seller._id}`, {
-//         withCredentials: true,
-//       })
-//       .then((res) => {
+//     const fetchCoupons = async () => {
+//       try {
+//         setIsLoading(true);
+//         const response = await axios.get(
+//           `${server}/code/get-code/${seller._id}`,
+//           {
+//             withCredentials: true,
+//           }
+//         );
+
+//         // Ensure we're setting an array, even if empty
+//         setCoupons(response.data.codes || []);
 //         setIsLoading(false);
-//         setCoupons(res.data);
-//       })
-//       .catch((error) => {
+
+//         console.log("Current products:", products);
+//       } catch (error) {
+//         toast.error("Error loading coupons");
 //         setIsLoading(false);
-//       });
-//   }, [dispatch]);
+//         setCoupons([]); // Set empty array on error
+//       }
+//     };
+
+//     fetchCoupons();
+//   }, [seller._id]);
 
 //   const handleDelete = async (id) => {
-//     axios
-//       .delete(`${server}/code/delete-coupon/${id}`, { withCredentials: true })
-//       .then((res) => {
-//         toast.success("Coupon code deleted succesfully!");
+//     try {
+//       await axios.delete(`${server}/code/delete-code/${id}`, {
+//         withCredentials: true,
 //       });
-//     window.location.reload();
+//       toast.success("Coupon code deleted successfully!");
+//       // Refresh coupons instead of page reload
+//       setCoupons(coupons.filter((coupon) => coupon._id !== id));
+//     } catch (error) {
+//       toast.error("Error deleting coupon");
+//     }
 //   };
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 
-//     await axios
-//       .post(
+//     try {
+//       const response = await axios.post(
 //         `${server}/code/create-code`,
 //         {
 //           name,
 //           minAmount,
 //           maxAmount,
-//           selectedProducts,
+//           selectedProduct: selectedProducts, // Match schema field name
 //           value,
 //           shopId: seller._id,
 //         },
 //         { withCredentials: true }
-//       )
-//       .then((res) => {
-//         toast.success("Coupon code created successfully!");
-//         setOpen(false);
-//         window.location.reload();
-//       })
-//       .catch((error) => {
-//         toast.error(error.response.data.message);
-//       });
+//       );
+
+//       toast.success("Coupon code created successfully!");
+//       setOpen(false);
+//       // Add new coupon to state instead of page reload
+//       setCoupons([...coupons, response.data.code]);
+
+//       // Reset form
+//       setName("");
+//       setValue(null);
+//       setMinAmount(null);
+//       setMaxAmount(null);
+//       setSelectedProducts(null);
+//     } catch (error) {
+//       toast.error(error.response?.data?.message || "Error creating coupon");
+//     }
 //   };
 
 //   const columns = [
-//     { field: "id", headerName: "Product Id", minWidth: 150, flex: 0.7 },
+//     { field: "id", headerName: "Coupon Id", minWidth: 150, flex: 0.7 },
 //     {
 //       field: "name",
 //       headerName: "Name",
@@ -84,44 +105,35 @@
 //       flex: 1.4,
 //     },
 //     {
-//       field: "price",
-//       headerName: "Price",
+//       field: "value",
+//       headerName: "Discount",
 //       minWidth: 100,
 //       flex: 0.6,
 //     },
-
 //     {
 //       field: "Delete",
 //       flex: 0.8,
 //       minWidth: 120,
 //       headerName: "",
-//       type: "number",
 //       sortable: false,
 //       renderCell: (params) => {
 //         return (
-//           <div className="flex items-center justify-center">
-//             <Button onClick={() => handleDelete(params.id)}>
-//               <AiOutlineDelete
-//                 size={20}
-//                 className="bg-red-500 flex justify-center items-center rounded-full w-8 h-8 py-2 text-white font-semibold hover:bg-white hover:text-red-500 hover:scale-125 duration-300"
-//               />
-//             </Button>
-//           </div>
+//           <Button onClick={() => handleDelete(params.id)}>
+//             <AiOutlineDelete
+//               size={20}
+//               className="bg-red-500 flex justify-center items-center rounded-full w-8 h-8 py-2 text-white font-semibold hover:bg-white hover:text-red-500 hover:scale-125 duration-300"
+//             />
+//           </Button>
 //         );
 //       },
 //     },
 //   ];
 
-//   const row = [];
-
-//   coupons &&
-//     coupons.forEach((item) => {
-//       row.push({
-//         id: item._id,
-//         name: item.name,
-//         price: item.value + " %",
-//       });
-//     });
+//   const rows = coupons.map((item) => ({
+//     id: item._id,
+//     name: item.name,
+//     value: `${item.value}%`,
+//   }));
 
 //   return (
 //     <>
@@ -138,7 +150,7 @@
 //             </div>
 //           </div>
 //           <DataGrid
-//             rows={row}
+//             rows={rows}
 //             columns={columns}
 //             pageSize={10}
 //             disableSelectionOnClick
@@ -157,7 +169,6 @@
 //                 <h5 className="text-[30px] font-Poppins text-center">
 //                   Create Coupon code
 //                 </h5>
-//                 {/* /* create coupoun code */}
 //                 <form onSubmit={handleSubmit} aria-required={true}>
 //                   <br />
 //                   <div>
@@ -181,13 +192,13 @@
 //                       <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
-//                       type="text"
+//                       type="number"
 //                       name="value"
 //                       value={value}
 //                       required
 //                       className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 //                       onChange={(e) => setValue(e.target.value)}
-//                       placeholder="Enter code value..."
+//                       placeholder="Enter discount percentage..."
 //                     />
 //                   </div>
 //                   <br />
@@ -195,11 +206,11 @@
 //                     <label className="pb-2">Min Amount</label>
 //                     <input
 //                       type="number"
-//                       name="value"
+//                       name="minAmount"
 //                       value={minAmount}
 //                       className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 //                       onChange={(e) => setMinAmount(e.target.value)}
-//                       placeholder="Enter code min amount..."
+//                       placeholder="Enter minimum amount..."
 //                     />
 //                   </div>
 //                   <br />
@@ -207,11 +218,11 @@
 //                     <label className="pb-2">Max Amount</label>
 //                     <input
 //                       type="number"
-//                       name="value"
+//                       name="maxAmount"
 //                       value={maxAmount}
 //                       className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 //                       onChange={(e) => setMaxAmount(e.target.value)}
-//                       placeholder="Enter code max amount..."
+//                       placeholder="Enter maximum amount..."
 //                     />
 //                   </div>
 //                   <br />
@@ -222,9 +233,7 @@
 //                       value={selectedProducts}
 //                       onChange={(e) => setSelectedProducts(e.target.value)}
 //                     >
-//                       <option value="Choose your selected products">
-//                         Choose a selected product
-//                       </option>
+//                       <option value="">Choose a selected product</option>
 //                       {products &&
 //                         products.map((i) => (
 //                           <option value={i.name} key={i.name}>
@@ -234,12 +243,12 @@
 //                     </select>
 //                   </div>
 //                   <br />
-//                   <input
+//                   <button
 //                     type="submit"
-//                     value="Create"
-//                     className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm cursor-pointer"
-//                   />
-//                   <div></div>
+//                     className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+//                   >
+//                     Create
+//                   </button>
 //                 </form>
 //               </div>
 //             </div>
@@ -269,9 +278,9 @@ const AllCoupons = () => {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [coupons, setCoupons] = useState([]);
-  const [minAmount, setMinAmount] = useState(null); // Fixed typo
+  const [minAmount, setMinAmount] = useState(null);
   const [maxAmount, setMaxAmount] = useState(null);
-  const [selectedProducts, setSelectedProducts] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState("");
   const [value, setValue] = useState(null);
   const { seller } = useSelector((state) => state.seller);
   const { products } = useSelector((state) => state.products);
@@ -292,8 +301,6 @@ const AllCoupons = () => {
         // Ensure we're setting an array, even if empty
         setCoupons(response.data.codes || []);
         setIsLoading(false);
-
-        console.log("Current products:", products);
       } catch (error) {
         toast.error("Error loading coupons");
         setIsLoading(false);
@@ -327,7 +334,7 @@ const AllCoupons = () => {
           name,
           minAmount,
           maxAmount,
-          selectedProduct: selectedProducts, // Match schema field name
+          selectedProducts,
           value,
           shopId: seller._id,
         },
@@ -344,7 +351,7 @@ const AllCoupons = () => {
       setValue(null);
       setMinAmount(null);
       setMaxAmount(null);
-      setSelectedProducts(null);
+      setSelectedProducts("");
     } catch (error) {
       toast.error(error.response?.data?.message || "Error creating coupon");
     }
@@ -363,6 +370,30 @@ const AllCoupons = () => {
       headerName: "Discount",
       minWidth: 100,
       flex: 0.6,
+    },
+    {
+      field: "minAmount",
+      headerName: "Min Amount",
+      minWidth: 120,
+      flex: 0.6,
+      renderCell: (params) => {
+        return params.value > 0 ? `Nrs. ${params.value}` : "No minimum";
+      },
+    },
+    {
+      field: "maxAmount",
+      headerName: "Max Discount",
+      minWidth: 120,
+      flex: 0.6,
+      renderCell: (params) => {
+        return params.value > 0 ? `Nrs. ${params.value}` : "No limit";
+      },
+    },
+    {
+      field: "product",
+      headerName: "Product",
+      minWidth: 150,
+      flex: 0.8,
     },
     {
       field: "Delete",
@@ -387,6 +418,9 @@ const AllCoupons = () => {
     id: item._id,
     name: item.name,
     value: `${item.value}%`,
+    minAmount: item.minAmount || 0,
+    maxAmount: item.maxAmount || 0,
+    product: item.selectedProducts || "All Products",
   }));
 
   return (
@@ -412,21 +446,20 @@ const AllCoupons = () => {
           />
           {open && (
             <div className="fixed top-0 left-0 w-full h-screen bg-[#00000062] z-[20000] flex items-center justify-center">
-              <div className="w-[90%] 800px:w-[40%] h-[80vh] bg-white rounded-md shadow p-4">
+              <div className="w-[90%] 800px:w-[50%] bg-white rounded-md shadow-lg p-6 max-h-[90vh] overflow-y-auto">
                 <div className="w-full flex justify-end">
                   <RxCross1
                     size={30}
-                    className="cursor-pointer"
+                    className="cursor-pointer text-[#50007a] hover:text-red-500"
                     onClick={() => setOpen(false)}
                   />
                 </div>
-                <h5 className="text-[30px] font-Poppins text-center">
-                  Create Coupon code
-                </h5>
-                <form onSubmit={handleSubmit} aria-required={true}>
-                  <br />
-                  <div>
-                    <label className="pb-2">
+                <h1 className="text-[25px] text-center font-semibold text-[#50007a] pb-4">
+                  Create Coupon Code
+                </h1>
+                <form onSubmit={handleSubmit} className="w-full">
+                  <div className="w-full pb-3">
+                    <label className="block text-sm font-medium text-[#50007a] py-2">
                       Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -434,15 +467,15 @@ const AllCoupons = () => {
                       name="name"
                       required
                       value={name}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter code name..."
                     />
                   </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">
-                      Discount Percentage
+
+                  <div className="w-full pb-3">
+                    <label className="block text-sm font-medium text-[#50007a] py-2">
+                      Discount Percentage{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -450,44 +483,61 @@ const AllCoupons = () => {
                       name="value"
                       value={value}
                       required
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       onChange={(e) => setValue(e.target.value)}
                       placeholder="Enter discount percentage..."
                     />
                   </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">Min Amount</label>
-                    <input
-                      type="number"
-                      name="minAmount"
-                      value={minAmount}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      onChange={(e) => setMinAmount(e.target.value)}
-                      placeholder="Enter minimum amount..."
-                    />
+
+                  <div className="w-full 800px:flex block pb-3">
+                    <div className="w-[100%] 800px:w-[50%] 800px:pr-2">
+                      <label className="block text-sm font-medium text-[#50007a] py-2">
+                        Min Amount (Nrs.)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="minAmount"
+                          value={minAmount}
+                          className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          onChange={(e) => setMinAmount(e.target.value)}
+                          placeholder="Minimum purchase amount..."
+                        />
+                        <div className="text-xs text-gray-500 mt-1">
+                          (0 = no minimum)
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-[100%] 800px:w-[50%] 800px:pl-2 mt-3 800px:mt-0">
+                      <label className="block text-sm font-medium text-[#50007a] py-2">
+                        Max Discount (Nrs.)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="maxAmount"
+                          value={maxAmount}
+                          className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          onChange={(e) => setMaxAmount(e.target.value)}
+                          placeholder="Maximum discount amount..."
+                        />
+                        <div className="text-xs text-gray-500 mt-1">
+                          (0 = no limit)
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">Max Amount</label>
-                    <input
-                      type="number"
-                      name="maxAmount"
-                      value={maxAmount}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      onChange={(e) => setMaxAmount(e.target.value)}
-                      placeholder="Enter maximum amount..."
-                    />
-                  </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">Selected Product</label>
+
+                  <div className="w-full pb-3">
+                    <label className="block text-sm font-medium text-[#50007a] py-2">
+                      Apply to Product (Optional)
+                    </label>
                     <select
-                      className="w-full mt-2 border h-[35px] rounded-[5px]"
+                      className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       value={selectedProducts}
                       onChange={(e) => setSelectedProducts(e.target.value)}
                     >
-                      <option value="">Choose a selected product</option>
+                      <option value="">All Products</option>
                       {products &&
                         products.map((i) => (
                           <option value={i.name} key={i.name}>
@@ -495,14 +545,19 @@ const AllCoupons = () => {
                           </option>
                         ))}
                     </select>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Leave empty to apply to all products from your shop
+                    </div>
                   </div>
-                  <br />
-                  <button
-                    type="submit"
-                    className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-                  >
-                    Create
-                  </button>
+
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="submit"
+                      className="w-[210px] h-[50px] text-center text-[#50007a] border-2 font-semibold border-[#50007a] rounded-md cursor-pointer mt-6 hover:border-red-900 hover:text-red-900 hover:scale-105 duration-300"
+                    >
+                      Create Coupon
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>

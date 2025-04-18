@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
   AiFillHeart,
-  AiFillStar,
   AiOutlineEye,
   AiOutlineHeart,
   AiOutlineShoppingCart,
-  AiOutlineStar,
 } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import ProductDetailsCard from "../ProductDetailsCard/ProductDetailsCard.jsx";
@@ -33,7 +31,7 @@ const ProductCard = ({ data }) => {
     if (
       wishlist &&
       wishlist.items &&
-      wishlist.items.some((i) => i.product._id === data._id)
+      wishlist?.items.some((i) => i?.product?._id === data?._id)
     ) {
       setClick(true);
     } else {

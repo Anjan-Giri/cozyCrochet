@@ -18,6 +18,7 @@ import OrderSuccessPage from "../pages/OrderSuccessPage.jsx";
 import CalendarPage from "../pages/CalendarPage.jsx";
 import UserOrderDetailsPage from "../pages/UserOrderDetailsPage.jsx";
 import TrackOrderPage from "../pages/TrackOrderPage.jsx";
+import ContactUsPage from "../pages/ContactUsPage.jsx";
 
 export {
   LoginPage,
@@ -40,4 +41,5 @@ export {
   CalendarPage,
   UserOrderDetailsPage,
   TrackOrderPage,
+  ContactUsPage,
 };

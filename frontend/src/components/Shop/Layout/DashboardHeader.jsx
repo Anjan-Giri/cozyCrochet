@@ -5,7 +5,7 @@ import { BiSolidOffer } from "react-icons/bi";
 import { RiCoupon3Line } from "react-icons/ri";
 import { FaShoppingBasket } from "react-icons/fa";
 import { TbPackages } from "react-icons/tb";
-import logo from "../../../assests/logo.webp";
+import logo from "../../../assests/logo.png";
 import { backend_url } from "../../../server";
 import { IoSettings } from "react-icons/io5";
 
@@ -37,7 +37,7 @@ const DashboardHeader = () => {
   return (
     <div className="w-full h-[80px] bg-white shadow sticky top-0 left-0 z-30 flex items-center justify-between px-4">
       <div>
-        <Link to="/dashboard">
+        <Link to="/">
           <img src={logo} width={60} alt="logo" />
         </Link>
       </div>

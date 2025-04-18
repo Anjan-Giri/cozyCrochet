@@ -1,11 +1,12 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 
 import { server } from "../../server";
 import { toast } from "react-toastify";
+import CrochetBackground from "../CrochetBackground";
 
 const ShopLogin = () => {
   const navigate = useNavigate();
@@ -36,17 +37,9 @@ const ShopLogin = () => {
   };
 
   return (
-    <div
-      className="flex justify-center items-center min-h-screen"
-      // style={{
-      //   backgroundImage: `url(${d})`,
-      //   backgroundRepeat: "no-repeat",
-      //   backgroundSize: "cover",
-      //   width: "100%",
-      //   height: "100%",
-      // }}
-    >
-      <div className="bg-white rounded-lg shadow-lg py-10 px-24 w-1/2">
+    <div className="flex justify-center items-center min-h-screen">
+      <CrochetBackground />
+      <div className="bg-white rounded-lg shadow-lg py-10 px-24 w-1/2 z-10">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-purple-500">
             Sign In to your Shop

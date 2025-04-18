@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MdOutlineCreate, MdOutlineCreateNewFolder } from "react-icons/md";
-import { CiDiscount1, CiSettings } from "react-icons/ci";
+import { CiSettings } from "react-icons/ci";
 import { BiSolidOffer } from "react-icons/bi";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { FaShoppingBasket } from "react-icons/fa";
 import { TbPackages } from "react-icons/tb";
+import { RiCoupon3Line } from "react-icons/ri";
 
 const menuItems = [
   {
@@ -48,7 +49,7 @@ const menuItems = [
     id: 7,
     label: "Discount Codes",
     path: "/dashboard-coupon",
-    icon: <CiDiscount1 size={25} />,
+    icon: <RiCoupon3Line size={25} />,
   },
   {
     id: 8,

@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { categoriesData } from "../../stat/data";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import { createOffer } from "../../redux/actions/offer";
+import { getAllProductsShop } from "../../redux/actions/product";
 import { toast } from "react-toastify";
+import Loader from "../Layout/Loader";
 
 const CreateOffer = () => {
   const { seller } = useSelector((state) => state.seller);
   const { success, error } = useSelector((state) => state.offers);
+  const { products, isLoading } = useSelector((state) => state.products);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // State for selected product
+  const [selectedProduct, setSelectedProduct] = useState("");
+
+  // States for form data
   const [images, setImages] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -20,16 +26,65 @@ const CreateOffer = () => {
   const [originalPrice, setOriginalPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [stock, setStock] = useState("");
-
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [useProductImages, setUseProductImages] = useState(true);
+
+  // Fetch all products on component mount
+  useEffect(() => {
+    dispatch(getAllProductsShop(seller._id));
+  }, [dispatch, seller._id]);
+
+  // Handle product selection
+  const handleProductSelect = (e) => {
+    const productId = e.target.value;
+    setSelectedProduct(productId);
+
+    if (productId) {
+      const product = products.find((p) => p._id === productId);
+      if (product) {
+        // Populate form with product data
+        setName(product.name);
+        setDescription(product.description);
+        setCategory(product.category);
+        setTags(product.tags || "");
+        setOriginalPrice(product.originalPrice || product.discountPrice);
+        setDiscountPrice(product.discountPrice);
+        setStock(product.stock);
+
+        // Reset images to avoid confusion
+        setImages([]);
+      }
+    } else {
+      // Reset form if no product selected
+      resetForm();
+    }
+  };
+
+  // Reset form function
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setCategory("");
+    setTags("");
+    setOriginalPrice("");
+    setDiscountPrice("");
+    setStock("");
+    setImages([]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       // Validate required fields
-      if (!name || !description || !category || !discountPrice || !stock) {
+      if (
+        !selectedProduct ||
+        !startDate ||
+        !endDate ||
+        !discountPrice ||
+        !stock
+      ) {
         toast.error("Please fill all required fields");
         return;
       }
@@ -42,12 +97,19 @@ const CreateOffer = () => {
 
       const formData = new FormData();
 
-      // Append images
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
+      // Only append images if not using product images
+      if (!useProductImages) {
+        if (images.length === 0) {
+          toast.error("Please upload at least one image or use product images");
+          return;
+        }
 
-      // Append other fields
+        images.forEach((image) => {
+          formData.append("images", image);
+        });
+      }
+
+      // Append fields
       formData.append("name", name);
       formData.append("description", description);
       formData.append("category", category);
@@ -56,6 +118,7 @@ const CreateOffer = () => {
       formData.append("discountPrice", discountPrice);
       formData.append("stock", stock);
       formData.append("shopId", seller._id);
+      formData.append("productId", selectedProduct); // Add reference to original product
       formData.append("startDate", startDate.toISOString());
       formData.append("endDate", endDate.toISOString());
 
@@ -101,6 +164,7 @@ const CreateOffer = () => {
     }
 
     setImages((prev) => [...prev, ...validFiles]);
+    setUseProductImages(false); // If user uploads images, don't use product images
   };
 
   const today = new Date().toISOString().slice(0, 10);
@@ -110,6 +174,7 @@ const CreateOffer = () => {
         .toISOString()
         .slice(0, 10)
     : today;
+
   const handleStartDateChange = (e) => {
     const startDate = new Date(e.target.value);
 
@@ -123,195 +188,268 @@ const CreateOffer = () => {
 
   const handleEndDateChange = (e) => {
     const endDate = new Date(e.target.value);
-
     setEndDate(endDate);
   };
 
   return (
-    <div className="w-[90%] 800px:w-[50%] bg-white  shadow h-[80vh] rounded-[4px] p-3 overflow-y-scroll">
-      <h3 className="text-[30px] font-Poppins text-center">Create Offer</h3>
-      {/* offer product form */}
-      <form onSubmit={handleSubmit}>
-        <br />
-        <div>
-          <label className="pb-2">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={name}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your product name..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Description <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            cols="30"
-            required
-            rows="8"
-            type="text"
-            name="description"
-            value={description}
-            className="mt-2 appearance-none block w-full pt-2 px-3 border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter your product description..."
-          ></textarea>
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Category <span className="text-red-500">*</span>
-          </label>
-          <select
-            className="w-full mt-2 border h-[35px] rounded-[5px]"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="Choose a category">Choose a category</option>
-            {categoriesData &&
-              categoriesData.map((i) => (
-                <option value={i.title} key={i.title}>
-                  {i.title}
-                </option>
-              ))}
-          </select>
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Start Date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            name="startDate"
-            id="startDate"
-            value={startDate ? startDate.toISOString().slice(0, 10) : ""}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={handleStartDateChange}
-            min={today}
-            placeholder="Enter your product tags..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            End Date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            name="endDate"
-            value={endDate ? endDate.toISOString().slice(0, 10) : ""}
-            id="endDate"
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={handleEndDateChange}
-            min={minEndDate}
-            placeholder="Enter your product tags..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">Tags</label>
-          <input
-            type="text"
-            name="tags"
-            value={tags}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="Enter your product tags..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">Original Price</label>
-          <input
-            type="number"
-            name="price"
-            value={originalPrice}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setOriginalPrice(e.target.value)}
-            placeholder="Enter your product price..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Final Price (With Discount) <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={discountPrice}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setDiscountPrice(e.target.value)}
-            placeholder="Enter your product price with discount..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Product Stock <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={stock}
-            className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            onChange={(e) => setStock(e.target.value)}
-            placeholder="Enter your product stock..."
-          />
-        </div>
-        <br />
-        <div>
-          <label className="pb-2">
-            Upload Images <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="file"
-            name=""
-            id="upload"
-            className="hidden"
-            multiple
-            onChange={handleImageChange}
-          />
-          <div className="w-full flex items-center flex-wrap">
-            <label htmlFor="upload">
-              <AiOutlinePlusCircle size={30} className="mt-3" color="#555" />
+    <div className="w-full px-5">
+      <h1 className="text-[25px] text-center font-semibold text-[#50007a] pb-4">
+        Create Offer From Existing Product
+      </h1>
+
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="w-full flex flex-col items-center"
+        >
+          {/* Product Selection */}
+          <div className="w-full px-8 pb-6">
+            <label className="block text-sm font-medium text-[#50007a] py-2">
+              Select Product <span className="text-red-500">*</span>
             </label>
-            {images &&
-              images.map((image, index) => (
-                <img
-                  src={URL.createObjectURL(image)}
-                  key={`${image.name}-${index}`}
-                  alt=""
-                  className="h-[120px] w-[120px] object-cover m-2"
-                />
-              ))}
-            {/* {images &&
-              images.map((imgg) => (
-                <img
-                  src={URL.createObjectURL(imgg)}
-                  key={imgg}
-                  alt=""
-                  className="h-[120px] w-[120px] object-cover m-2"
-                />
-              ))} */}
+            <select
+              className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={selectedProduct}
+              onChange={handleProductSelect}
+            >
+              <option value="">Choose a product</option>
+              {products &&
+                products.map((product) => (
+                  <option value={product._id} key={product._id}>
+                    {product.name} - Price: Nrs {product.discountPrice} - Stock:{" "}
+                    {product.stock}
+                  </option>
+                ))}
+            </select>
           </div>
-          <br />
-          <div>
+
+          {/* Offer Dates */}
+          <div className="w-full 800px:flex block pb-3">
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Start Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                id="startDate"
+                value={startDate ? startDate.toISOString().slice(0, 10) : ""}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={handleStartDateChange}
+                min={today}
+              />
+            </div>
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                End Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="endDate"
+                id="endDate"
+                value={endDate ? endDate.toISOString().slice(0, 10) : ""}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={handleEndDateChange}
+                min={minEndDate}
+                disabled={!startDate}
+              />
+            </div>
+          </div>
+
+          {/* Product details section - readonly for some fields */}
+          <div className="w-full 800px:flex block pb-3">
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={name}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your offer name..."
+                readOnly={!selectedProduct}
+              />
+            </div>
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="category"
+                value={category}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                readOnly
+              />
+            </div>
+          </div>
+
+          <div className="w-full px-8 pb-3">
+            <label className="block text-sm font-medium text-[#50007a] py-2">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              cols="30"
+              rows="5"
+              type="text"
+              name="description"
+              value={description}
+              className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter your offer description..."
+              readOnly={!selectedProduct}
+            ></textarea>
+          </div>
+
+          <div className="w-full 800px:flex block pb-3">
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Original Price
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={originalPrice}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => setOriginalPrice(e.target.value)}
+                placeholder="Enter your offer price..."
+              />
+            </div>
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Special Offer Price <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={discountPrice}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => setDiscountPrice(e.target.value)}
+                placeholder="Enter your special offer price..."
+              />
+            </div>
+          </div>
+
+          <div className="w-full 800px:flex block pb-3">
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Offer Stock <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="stock"
+                value={stock}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="Enter your offer stock..."
+              />
+            </div>
+            <div className="w-[100%] 800px:w-[50%] px-8">
+              <label className="block text-sm font-medium text-[#50007a] py-2">
+                Tags
+              </label>
+              <input
+                type="text"
+                name="tags"
+                value={tags}
+                className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Enter your offer tags..."
+                readOnly={!selectedProduct}
+              />
+            </div>
+          </div>
+
+          <div className="w-full px-8 pb-3">
+            <div className="flex items-center mb-4">
+              <input
+                id="use-product-images"
+                type="checkbox"
+                checked={useProductImages}
+                onChange={() => setUseProductImages(!useProductImages)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                disabled={!selectedProduct}
+              />
+              <label
+                htmlFor="use-product-images"
+                className="ml-2 text-sm font-medium text-[#50007a]"
+              >
+                Use product images for this offer
+              </label>
+            </div>
+
+            {!useProductImages && (
+              <>
+                <label className="block text-sm font-medium text-[#50007a] py-2">
+                  Upload Offer Images <span className="text-red-500">*</span>
+                </label>
+                <div className="border border-purple-700 rounded-md p-4 shadow-sm">
+                  <input
+                    type="file"
+                    name=""
+                    id="upload"
+                    className="hidden"
+                    multiple
+                    onChange={handleImageChange}
+                    disabled={!selectedProduct}
+                  />
+                  <div className="w-full flex items-center flex-wrap">
+                    <label
+                      htmlFor="upload"
+                      className={`cursor-pointer flex items-center justify-center rounded-md ${
+                        !selectedProduct ? "opacity-50" : "hover:bg-purple-50"
+                      } p-2 mr-2`}
+                    >
+                      <AiOutlinePlusCircle
+                        size={30}
+                        className="text-[#50007a]"
+                      />
+                      <span className="ml-2 text-sm text-[#50007a]">
+                        Add Image
+                      </span>
+                    </label>
+                    {images &&
+                      images.map((i, index) => (
+                        <div key={index} className="relative m-2">
+                          <img
+                            src={URL.createObjectURL(i)}
+                            alt=""
+                            className="h-[100px] w-[100px] object-cover rounded-md border-2 border-[#ece3e3]"
+                          />
+                          <span className="absolute top-1 right-1 bg-white text-xs px-2 py-1 rounded-full">
+                            {index + 1}/5
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                  {images.length === 0 && (
+                    <p className="text-gray-400 text-sm mt-2 text-center">
+                      Upload up to 5 offer images (JPEG, PNG, WebP)
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center">
             <input
               type="submit"
-              value="Create"
-              className="mt-2 cursor-pointer appearance-none text-center block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              value="Create Offer"
+              className={`w-[210px] h-[50px] text-center text-[#50007a] border-2 font-semibold border-[#50007a] rounded-md cursor-pointer mt-10 ${
+                !selectedProduct
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:border-red-900 hover:text-red-900 hover:scale-105"
+              } duration-300`}
+              disabled={!selectedProduct}
             />
           </div>
-        </div>
-      </form>
+        </form>
+      )}
     </div>
   );
 };

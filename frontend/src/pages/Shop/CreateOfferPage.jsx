@@ -11,7 +11,7 @@ const CreateOfferPage = () => {
         <div className="w-[80px] 800px:w-[280px]">
           <DashboardSideBar active={6} />
         </div>
-        <div className="w-full justify-center flex">
+        <div className="w-full justify-center flex bg-white mx-3 my-2">
           <CreateOffer />
         </div>
       </div>

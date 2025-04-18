@@ -268,41 +268,6 @@ router.put(
       // Update the order status
       order.status = req.body.status;
 
-      // If status is "Transferred to delivery partner", update inventory
-      if (req.body.status === "Transferred to delivery partner") {
-        // Check each item in the cart and update its inventory
-        for (const item of order.cart) {
-          // Get the product ID more safely from different possible structures
-          const productId =
-            // Try direct product ID first
-            (item.product &&
-              (typeof item.product === "string"
-                ? item.product
-                : item.product._id)) ||
-            // Then try the product ID directly on the item
-            item._id;
-
-          const quantity = item.qty || item.quantity || 1;
-
-          if (productId) {
-            // Find the product and update inventory
-            const product = await Product.findById(productId);
-            if (product) {
-              product.stock -= quantity;
-              product.sold_out += quantity;
-              await product.save({ validateBeforeSave: false });
-              console.log(`Updated inventory for product: ${productId}`);
-            } else {
-              console.log(`Product not found: ${productId}`);
-            }
-          } else {
-            console.log(
-              `Could not determine product ID for item: ${JSON.stringify(item)}`
-            );
-          }
-        }
-      }
-
       // Set delivered date if status is "Delivered"
       if (req.body.status === "Delivered") {
         order.deliveredAt = Date.now();

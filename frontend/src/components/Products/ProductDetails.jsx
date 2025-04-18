@@ -92,7 +92,7 @@ const ProductDetails = ({ data }) => {
     if (
       wishlist &&
       wishlist.items &&
-      wishlist.items.some((i) => i.product._id === data._id)
+      wishlist?.items.some((i) => i?.product?._id === data?._id)
     ) {
       setClick(true);
     } else {

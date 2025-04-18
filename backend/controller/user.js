@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/mail.js");
 const sendToken = require("../utils/jwtToken.js");
 const { isAuthenticatedUser } = require("../middleware/auth.js");
+const crypto = require("crypto");
 
 router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
   try {
@@ -403,6 +404,127 @@ router.put(
       res.status(200).json({
         success: true,
         message: "Password updated successfully",
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Request password reset
+router.post(
+  "/forgot-password",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return next(new ErrorHandler("Please provide an email", 400));
+      }
+
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return next(new ErrorHandler("User not found with this email", 404));
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(20).toString("hex");
+
+      // Hash and add to user document
+      user.resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+
+      // Token valid for 15 minutes
+      user.resetPasswordTime = Date.now() + 15 * 60 * 1000;
+
+      await user.save({ validateBeforeSave: false });
+
+      // Create reset URL
+      const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      // Email message
+      const message = `
+        Hello ${user.name},
+
+        You requested a password reset. Please use the link below to reset your password:
+
+        ${resetUrl}
+
+        If you didn't request this, please ignore this email.
+
+        This link is valid for 15 minutes.
+      `;
+
+      try {
+        await sendMail({
+          email: user.email,
+          subject: "cozyCrochet Password Reset",
+          message,
+        });
+
+        res.status(200).json({
+          success: true,
+          message: `Reset password email sent to ${user.email}`,
+        });
+      } catch (error) {
+        user.resetPasswordToken = undefined;
+        user.resetPasswordTime = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        return next(new ErrorHandler(error.message, 500));
+      }
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Reset password
+router.post(
+  "/reset-password/:token",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      // Hash the token from URL
+      const resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+      // Find user with this token and valid expiry time
+      const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordTime: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return next(
+          new ErrorHandler("Reset token is invalid or has expired", 400)
+        );
+      }
+
+      // Validate passwords
+      const { password, confirmPassword } = req.body;
+
+      if (!password || !confirmPassword) {
+        return next(new ErrorHandler("Please provide both passwords", 400));
+      }
+
+      if (password !== confirmPassword) {
+        return next(new ErrorHandler("Passwords do not match", 400));
+      }
+
+      // Update password
+      user.password = password;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordTime = undefined;
+
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Password has been reset successfully",
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));

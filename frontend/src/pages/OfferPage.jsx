@@ -35,18 +35,6 @@ const OfferPage = () => {
             <div className="text-center text-gray-500">No offers available</div>
           )}
         </div>
-
-        {/* <div className="w-full grid">
-          {isLoading ? (
-            <div className="text-center">
-              <Loader />
-            </div>
-          ) : offers && offers.length > 0 ? (
-            <OfferCard offers={offers} active={true} />
-          ) : (
-            <div className="text-center text-gray-500">No offers available</div>
-          )}
-        </div> */}
       </div>
       <Footer />
     </div>

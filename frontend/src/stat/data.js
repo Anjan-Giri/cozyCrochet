@@ -18,7 +18,7 @@ export const navItems = [
   },
   {
     title: "Contact Us",
-    url: "/contact",
+    url: "/contact-us",
   },
   {
     title: "Calendar Events",
@@ -580,47 +580,58 @@ export const productData = [
 
 export const footerCompanyLinks = [
   {
-    name: "About us",
-    link: "/about",
+    name: "Home",
+    link: "/",
   },
   {
-    name: "Careers",
-    link: "/carrers",
+    name: "Contact",
+    link: "/contact-us",
   },
   {
-    name: "Our Blog",
+    name: "Calendar",
+    link: "/calendar-events",
   },
   {
-    name: "Reviews",
+    name: "Admin",
+    link: "/admin-login",
   },
 ];
 
 export const footerProductLinks = [
   {
-    name: "Crochet Toys",
+    name: "Products",
+    link: "/products",
   },
   {
-    name: "Plushies",
+    name: "Offers",
+    link: "/offers",
   },
   {
-    name: "Crochet Accessories",
+    name: "Contact",
+    link: "/contact-us",
   },
   {
-    name: "Crochet Flowers",
+    name: "Best Selling",
+    link: "/best-selling",
   },
 ];
 
 export const footerSupportLinks = [
   {
     name: "FAQ",
+    link: "/faq",
   },
-  {
-    name: "Offer",
-  },
+
   {
     name: "Contact Us",
+    link: "/contact-us",
   },
   {
-    name: "Shipping",
+    name: "Profile",
+    link: "/profile",
+  },
+  {
+    name: "Become Seller",
+    link: "/shop-create",
   },
 ];

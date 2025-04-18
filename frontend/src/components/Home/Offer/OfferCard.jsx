@@ -1,15 +1,8 @@
 import React, { useMemo } from "react";
 import Timer from "./Timer.jsx";
-import { backend_url } from "../../../server.js"; // Make sure this path is correct
-import { AiOutlineShoppingCart } from "react-icons/ai";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { addToCart } from "../../../redux/actions/cart.js";
+import { backend_url } from "../../../server.js";
 
-const OfferCard = ({ offers, active, data }) => {
-  const { cart } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
-
+const OfferCard = ({ offers, active }) => {
   const getBestOffer = () => {
     if (!offers || offers.length === 0) return null;
 
@@ -52,26 +45,14 @@ const OfferCard = ({ offers, active, data }) => {
 
   if (!bestOffer) return null;
 
-  const discountPercentage = Math.round(
-    ((bestOffer.originalPrice - bestOffer.discountPrice) /
-      bestOffer.originalPrice) *
-      100
-  );
-
-  // const addToCartHandler = (data) => {
-  //   const isItemExists = cart?.items.find((i) => i._id === data._id);
-  //   if (isItemExists) {
-  //     toast.error("Item already in cart!");
-  //   } else {
-  //     if (data.stock < 1) {
-  //       toast.error("Product stock limited!");
-  //     } else {
-  //       const cartData = { ...data, qty: 1 };
-  //       dispatch(addToCart(cartData));
-  //       toast.success("Item added to cart successfully!");
-  //     }
-  //   }
-  // };
+  const discountPercentage =
+    bestOffer.originalPrice > 0
+      ? Math.round(
+          ((Number(bestOffer.originalPrice) - Number(bestOffer.discountPrice)) /
+            Number(bestOffer.originalPrice)) *
+            100
+        )
+      : 0;
 
   return (
     <div
@@ -80,15 +61,15 @@ const OfferCard = ({ offers, active, data }) => {
       } lg:flex p-2 border-b-orange-200 border-2`}
     >
       <div className="w-full lg:w-[50%] m-auto py-4">
-        <div className="w-full h-80 md:h-96 lg:h-[400px] rounded-md flex items-center justify-center ">
+        <div className="w-full h-80 md:h-96 lg:h-[400px] flex items-center justify-center overflow-hidden">
           <img
             src={imageUrl}
             alt={bestOffer.name}
-            className="max-w-full max-h-full object-contain"
+            className="w-full h-full object-contain"
           />
         </div>
       </div>
-      <div className="w-full lg:w-[40%] flex flex-col justify-center px-4 pb-4 mr-16">
+      <div className="w-full lg:w-[40%] flex flex-col justify-center px-4 pb-4">
         <div className="bg-red-500 text-white px-2 py-1 rounded-full w-fit mb-2">
           {discountPercentage}% OFF
         </div>

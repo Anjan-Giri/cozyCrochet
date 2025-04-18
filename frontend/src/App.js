@@ -24,6 +24,7 @@ import {
   CalendarPage,
   UserOrderDetailsPage,
   TrackOrderPage,
+  ContactUsPage,
 } from "./routes/Routes.js";
 
 import {
@@ -39,6 +40,15 @@ import {
   ShopSettingsPage,
 } from "./routes/ShopRoutes.js";
 
+import {
+  AdminLoginPage,
+  AdminDashboard,
+  AdminUsers,
+  AdminSellers,
+  AdminProducts,
+  AdminOrders,
+} from "./routes/AdminRoutes.js";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loadSeller, loadUser } from "./redux/actions/user.js";
@@ -52,6 +62,10 @@ import { server } from "./server.js";
 import axios from "axios";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import ForgotPassword from "./components/ForgotPassword.jsx";
+import ResetPassword from "./components/ResetPassword.jsx";
+import { loadAdmin } from "./redux/actions/admin.js";
+import AdminProtectedRoute from "./routes/AdminProtectedRoute.js";
 
 const App = () => {
   const [stripeApikey, setStripeApikey] = useState("");
@@ -78,6 +92,7 @@ const App = () => {
     Store.dispatch(loadSeller());
     Store.dispatch(fetchCart());
     Store.dispatch(fetchWishlist());
+    Store.dispatch(loadAdmin());
   }, []);
 
   return (
@@ -92,6 +107,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/sign-up" element={<SignupPage />} />
         <Route
           path="/activation/:activation_token"
@@ -104,6 +121,7 @@ const App = () => {
         <Route path="/products" element={<ProductPage />} />
         <Route path="/best-selling" element={<BestSellingPage />} />
         <Route path="/offers" element={<OfferPage />} />
+        <Route path="/contact-us" element={<ContactUsPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/product/:name" element={<ProductDetailsPage />} />
         <Route path="/shop-preview/:id" element={<ShopPreviewPage />} />
@@ -243,6 +261,48 @@ const App = () => {
             <SellerProtectedRoute>
               <ShopSettingsPage />
             </SellerProtectedRoute>
+          }
+        />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminProtectedRoute>
+              <AdminUsers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/sellers"
+          element={
+            <AdminProtectedRoute>
+              <AdminSellers />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/products"
+          element={
+            <AdminProtectedRoute>
+              <AdminProducts />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminProtectedRoute>
+              <AdminOrders />
+            </AdminProtectedRoute>
           }
         />
       </Routes>

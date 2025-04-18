@@ -20,11 +20,24 @@ router.post(
         return next(new ErrorHandler("Code already exists for this shop", 400));
       }
 
+      const minAmount = parseFloat(req.body.minAmount) || 0;
+      const maxAmount = parseFloat(req.body.maxAmount) || 0;
+
+      if (minAmount < 0) {
+        return next(new ErrorHandler("Minimum amount cannot be negative", 400));
+      }
+
+      if (maxAmount < 0) {
+        return next(
+          new ErrorHandler("Maximum discount cannot be negative", 400)
+        );
+      }
+
       const codeData = {
         name: req.body.name,
         value: req.body.value,
-        minAmount: req.body.minAmount || 0,
-        maxAmount: req.body.maxAmount || 0,
+        minAmount: minAmount,
+        maxAmount: maxAmount,
         shop: req.body.shopId,
         selectedProducts: req.body.selectedProducts || null,
       };
@@ -51,7 +64,6 @@ router.get(
       }); // Added sorting by creation date
 
       res.status(200).json({
-        // Changed from 201 to 200 as it's a GET request
         success: true,
         codes,
       });
