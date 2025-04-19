@@ -85,7 +85,7 @@ export const brandingData = [
   {
     id: 2,
     title: "Offers & Discounts",
-    Description: "Save up to 65% off",
+    Description: "Save up to 90% off on offers",
     icon: (
       <svg
         width="32"

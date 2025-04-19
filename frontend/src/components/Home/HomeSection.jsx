@@ -1,10 +1,5 @@
 import React from "react";
-// import home1 from "../../assests/home1.jpg";
-// import home2 from "../../assests/home2.jpg";
-// import home3 from "../../assests/home3.jpg";
 import home4 from "../../assests/home4.jpeg";
-// import home5 from "../../assests/home5.jpg";
-// import home6 from "../../assests/home6.jpg";
 import styles from "../../styles/styles";
 import { Link } from "react-router-dom";
 
@@ -24,9 +19,9 @@ const HomeSection = () => {
           Best Place for <br /> Crochet Collections!
         </h1>
         <p className="pt-5 pr-6 text-[16px] font-Poppins text-[#3f004c]">
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Cum
-          temporibus <br /> deserunt illum aliquam quisquam sequi consectetur
-          tempora, ipsum!
+          Discover our handcrafted crochet items made with premium yarns and
+          artisanal care. <br /> Each piece tells a unique story, combining
+          traditional techniques with modern designs.
         </p>
         <Link to="/products" className="inline-block">
           <div className="w-[150px] text-white hover:text-[#3f004c] bg-[#2d0036] hover:bg-[#baaf96] hover:scale-105 duration-300 h-[50px] my-3 flex items-center justify-center rounded-xl cursor-pointer mt-10">

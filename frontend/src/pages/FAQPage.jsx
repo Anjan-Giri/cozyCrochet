@@ -1,332 +1,3 @@
-// import React, { useState } from "react";
-// import Header from "../components/Layout/Header";
-// import Footer from "../components/Layout/Footer";
-
-// const FAQPage = () => {
-//   return (
-//     <div>
-//       <Header activeHeading={5} />
-//       <FAQ />
-//       <Footer />
-//     </div>
-//   );
-// };
-
-// const FAQ = () => {
-//   const [tab, setTab] = useState(0);
-
-//   const toggleTab = (index) => {
-//     if (tab === index) {
-//       setTab(0);
-//     } else {
-//       setTab(index);
-//     }
-//   };
-
-//   return (
-//     <div className="w-11/12 mx-auto py-16">
-//       <h2 className="text-2xl font-semibold text-purple-800 mb-10">FAQ</h2>
-//       <div className="mx-auto space-y-4">
-//         {/* single Faq */}
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(2)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               What is your return policy?
-//             </span>
-//             {tab === 2 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 2 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 If you're not satisfied with your purchase, we accept returns
-//                 within 30 days of delivery. To initiate a return, please email
-//                 us at support@myecommercestore.com with your order number and a
-//                 brief explanation of why you're returning the item.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(3)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               How do I track my order?
-//             </span>
-//             {tab === 3 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 3 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 You can track your order by clicking the tracking link in your
-//                 shipping confirmation email, or by logging into your account on
-//                 our website and viewing the order details.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(4)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               How do I contact customer support?
-//             </span>
-//             {tab === 4 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 4 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 You can contact our customer support team by emailing us at
-//                 support@myecommercestore.com, or by calling us at (555) 123-4567
-//                 between the hours of 9am and 5pm EST, Monday through Friday.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(5)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               Can I change or cancel my order?
-//             </span>
-//             {tab === 5 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 5 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 Unfortunately, once an order has been placed, we are not able to
-//                 make changes or cancellations. If you no longer want the items
-//                 you've ordered, you can return them for a refund within 30 days
-//                 of delivery.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(6)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               Do you offer international shipping?
-//             </span>
-//             {tab === 6 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 6 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 Currently, we only offer shipping within the United States.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="border-b border-gray-200 pb-4">
-//           <button
-//             className="flex items-center justify-between w-full"
-//             onClick={() => toggleTab(7)}
-//           >
-//             <span className="text-lg font-medium text-gray-900">
-//               What payment methods do you accept?
-//             </span>
-//             {tab === 7 ? (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M6 18L18 6M6 6l12 12"
-//                 />
-//               </svg>
-//             ) : (
-//               <svg
-//                 className="h-6 w-6 text-gray-500"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M9 5l7 7-7 7"
-//                 />
-//               </svg>
-//             )}
-//           </button>
-//           {tab === 7 && (
-//             <div className="mt-4">
-//               <p className="text-base text-gray-500">
-//                 We accept visa,mastercard,paypal payment method also we have
-//                 cash on delivery system.
-//               </p>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-// export default FAQPage;
-
 import React, { useState } from "react";
 import Header from "../components/Layout/Header";
 import Footer from "../components/Layout/Footer";
@@ -355,33 +26,45 @@ const FAQ = () => {
   const faqData = [
     {
       id: 1,
-      question: "Question 1",
-      answer: "Answer 1",
+      question: "How are your crochet items made?",
+      answer:
+        "All our crochet items are handmade with love and care. The artisans use premium quality yarns and follow traditional crochet techniques while incorporating modern designs. Each piece is crafted individually, ensuring attention to detail and high-quality craftsmanship.",
     },
     {
       id: 2,
-      question: "Question 2",
-      answer: "Answer 2",
+      question: "What is your return policy?",
+      answer:
+        "There is no return policy for the orders. The orders are non-returnable and non-refundable.",
     },
     {
       id: 3,
-      question: "Question 3",
-      answer: "Answer 3",
+      question: "How do I care for my crochet items?",
+      answer:
+        "Most of our crochet items should be hand-washed in cold water with mild soap and laid flat to dry. Avoid wringing or twisting the items. For specific care instructions, please refer to the shop dealing with the product. Proper care will ensure your crochet items maintain their shape and quality for years to come.",
     },
     {
       id: 4,
-      question: "Question 4",
-      answer: "Answer 4",
+      question: "Do you offer custom orders?",
+      answer:
+        "Yes! Our artisans love creating custom crochet pieces. Whether you need a specific size, color, or design, we're happy to work with you. Custom orders typically take 2-4 weeks to complete depending on complexity. To request a custom order, please contact your chosen shop through our website's contact form with details of what you're looking for.",
     },
     {
       id: 5,
-      question: "Question 5",
-      answer: "Answer 5",
+      question: "How long will shipping take?",
+      answer:
+        "The orders are typically processed within 1-3 business days and shipping takes an additional 3-5 business days. For available products in the website, we ship sooner, while custom ordeers may take longer.",
     },
     {
       id: 6,
-      question: "Question 6",
-      answer: "Answer 6",
+      question: "What payment methods do you accept?",
+      answer:
+        "We accept stripe payment and also accept cash on delivery for your orders.",
+    },
+    {
+      id: 7,
+      question: "Can I cancel my order?",
+      answer:
+        "Orders are non-cancellable. So make sure to properly double check your order details before placing it.",
     },
   ];
 

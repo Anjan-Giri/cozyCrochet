@@ -1,18 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { RxCross1 } from "react-icons/rx";
-import styles from "../../../styles/styles";
 import {
   AiFillHeart,
   AiOutlineHeart,
-  AiOutlineMessage,
   AiOutlineShoppingCart,
 } from "react-icons/ai";
-import { backend_url } from "../../../server";
+import { backend_url, server } from "../../../server";
 import { FaShop } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../redux/actions/cart";
 import { toast } from "react-toastify";
+import axios from "axios";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -22,6 +21,11 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const [click, setClick] = useState(false);
   const [count, setCount] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [shopData, setShopData] = useState(null);
+  const [shopProductCount, setShopProductCount] = useState(0);
+  const [shopTotalReviews, setShopTotalReviews] = useState(0);
+  const [shopAverageRating, setShopAverageRating] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const { cart } = useSelector((state) => state.cart);
   const { wishlist } = useSelector((state) => state.wishlist);
@@ -37,53 +41,57 @@ const ProductDetailsCard = ({ setOpen, data }) => {
     setCount(count + 1);
   };
 
-  // Memoize the image URL following the pattern from ShopInfo component
-  const getImageUrl = (image) => {
-    if (!image) return "/no-image.png";
+  const getImageUrl = useMemo(
+    () => (image) => {
+      if (!image) return "/no-image.png";
 
-    // If image is already a full URL
-    if (
-      typeof image === "string" &&
-      (image.startsWith("http://") || image.startsWith("https://"))
-    ) {
-      return image;
-    }
+      const imagePath = typeof image === "object" ? image.url : image;
 
-    // If image is an object with url property
-    const imagePath = typeof image === "object" ? image.url : image;
+      if (imagePath && imagePath.startsWith("http")) {
+        return imagePath;
+      }
 
-    // Remove any leading slashes and 'uploads/'
-    const cleanPath = imagePath.replace(/^\/?(uploads\/)?/, "");
+      const cleanImagePath = imagePath
+        ? imagePath.replace(/^\/?(uploads\/)?/, "")
+        : "";
+      const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Construct the full URL using the backend_url
-    return `${backend_url}uploads/${cleanPath}`;
-  };
+      return `${baseUrl}/uploads/${cleanImagePath}`;
+    },
+    [imageError]
+  );
 
-  // Get the product image URL
   const productImageUrl = useMemo(() => {
     if (imageError) return "/no-image.png";
 
-    // Check which property contains the image data
-    if (data.image_Url && data.image_Url[0]) {
+    if (data.images && data.images[0]) {
+      return getImageUrl(data.images[0]);
+    } else if (data.image_Url && data.image_Url[0]) {
       return getImageUrl(data.image_Url[0].url);
-    } else if (data.images && data.images[0]) {
-      return getImageUrl(data.images[0].url);
     }
     return "/no-image.png";
-  }, [data, imageError]);
+  }, [data, imageError, getImageUrl]);
 
-  // Get the shop avatar URL
-  const shopAvatarUrl = useMemo(() => {
-    if (!data.shop) return "/default-avatar.png";
+  const getShopAvatarUrl = (avatar) => {
+    if (!avatar) return "/default-avatar.png";
 
-    // Check which property contains the avatar data
-    if (data.shop.shop_avatar) {
-      return getImageUrl(data.shop.shop_avatar.url);
-    } else if (data.shop.avatar) {
-      return getImageUrl(data.shop.avatar);
+    if (
+      typeof avatar === "string" &&
+      (avatar.startsWith("http://") || avatar.startsWith("https://"))
+    ) {
+      return avatar;
     }
-    return "/default-avatar.png";
-  }, [data.shop]);
+
+    const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
+
+    if (!avatarPath) return "/default-avatar.png";
+
+    const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
+
+    const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
+
+    return `${baseUrl}/uploads/${cleanPath}`;
+  };
 
   const addToCartHandler = (id) => {
     // Check if cart items exist and is an array
@@ -104,11 +112,11 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   useEffect(() => {
-    // Change from wishlist.find to checking if wishlist exists and has items
+    // Check if item is in wishlist
     if (
       wishlist &&
       wishlist.items &&
-      wishlist.items.some((i) => i.product._id === data._id)
+      wishlist.items.some((i) => i?.product?._id === data?._id)
     ) {
       setClick(true);
     } else {
@@ -118,14 +126,80 @@ const ProductDetailsCard = ({ setOpen, data }) => {
 
   const addToWishlistHandler = (data) => {
     setClick(!click);
-
     dispatch(addToWishlist(data));
   };
+
   const removeFromWishlistHandler = (data) => {
     setClick(!click);
-
     dispatch(removeFromWishlist(data));
   };
+
+  // Fetch shop data and calculate ratings
+  useEffect(() => {
+    const fetchShopData = async () => {
+      if (data?.shop?._id) {
+        try {
+          setLoading(true);
+
+          // Fetch updated shop info
+          const shopResponse = await axios.get(
+            `${server}/shop/get-shop-info/${data.shop._id}`
+          );
+
+          if (shopResponse.data.success) {
+            setShopData(shopResponse.data.shop);
+          }
+
+          // Fetch all products for this specific shop to calculate ratings
+          const productsResponse = await axios.get(
+            `${server}/product/get-all-products-shop/${data.shop._id}`
+          );
+
+          if (productsResponse.data.success) {
+            // Count the products
+            const productsArray = productsResponse.data.products || [];
+            setShopProductCount(productsArray.length);
+
+            // Calculate total shop reviews by summing all product reviews
+            let reviewCount = 0;
+            let ratingSum = 0;
+            let ratingCount = 0;
+
+            productsArray.forEach((product) => {
+              // Count reviews
+              const productReviews = product.reviews
+                ? product.reviews.length
+                : 0;
+              reviewCount += productReviews;
+
+              // Sum ratings for average calculation
+              if (product.reviews && product.reviews.length > 0) {
+                product.reviews.forEach((review) => {
+                  if (review.rating) {
+                    ratingSum += review.rating;
+                    ratingCount++;
+                  }
+                });
+              }
+            });
+
+            setShopTotalReviews(reviewCount);
+
+            // Calculate average rating (with 1 decimal place)
+            const avgRating =
+              ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
+            setShopAverageRating(avgRating);
+          }
+        } catch (error) {
+          console.error("Error fetching shop data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchShopData();
+  }, [data?.shop?._id]);
 
   return (
     <div className="bg-[#fff]">
@@ -134,7 +208,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
           <div className="w-[90%] 800px:w-[60%] h-[90vh] overflow-y-scroll 800px:h-[75vh] bg-white rounded-md shadow-sm relative p-4">
             <RxCross1
               size={30}
-              className="absolute right-3 top-3 z-50"
+              className="absolute right-3 top-3 z-50 cursor-pointer hover:text-gray-700"
               onClick={() => setOpen(false)}
             />
 
@@ -143,47 +217,64 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                 <img
                   src={productImageUrl}
                   alt={data.name || "Product"}
-                  className="w-full h-auto object-contain"
+                  className="w-[70%] h-auto object-contain m-auto"
                   onError={(e) => {
                     setImageError(true);
                     e.target.src = "/no-image.png";
                   }}
                   loading="lazy"
                 />
-                <div className="flex items-center pt-4">
-                  <img
-                    src={shopAvatarUrl}
-                    alt={data.shop?.name || "Shop"}
-                    className="w-[50px] h-[50px] rounded-full mr-2 object-cover"
-                    onError={(e) => {
-                      e.target.src = "/default-avatar.png";
-                    }}
-                    loading="lazy"
-                  />
+                <div className="flex items-center mt-8 border-t pt-4">
+                  <Link to={`/shop-preview/${data.shop._id}`}>
+                    <img
+                      src={getShopAvatarUrl(
+                        shopData?.avatar || data.shop?.avatar
+                      )}
+                      alt={data.shop?.name || "Shop"}
+                      className="w-[70px] h-[70px] rounded-full mr-4 object-cover"
+                      onError={(e) => {
+                        e.target.src = "/default-avatar.png";
+                      }}
+                      loading="lazy"
+                    />
+                  </Link>
                   <div>
-                    <h3 className="pt-3 text-[15px] pb-3 text-[#b10012]">
-                      {data.shop?.name || "Shop"}
-                    </h3>
-                    <h5 className="pb-2 text-[15px]">
-                      ({data.shop?.ratings || "No ratings"}) Rating
-                    </h5>
+                    <Link to={`/shop-preview/${data.shop._id}`}>
+                      <h3 className="text-[16px] font-medium text-[#b10012]">
+                        {shopData?.name || data.shop?.name || "Shop"}
+                      </h3>
+                    </Link>
+                    <div className="flex items-center">
+                      <span className="text-[14px] mr-1">
+                        {loading ? "Loading..." : shopAverageRating} ★
+                      </span>
+                      <span className="text-[13px]">
+                        ({shopTotalReviews}{" "}
+                        {shopTotalReviews === 1 ? "Rating" : "Ratings"})
+                      </span>
+                    </div>
+                    <div className="flex items-center mt-1">
+                      <span className="text-[13px] text-gray-600">
+                        {shopProductCount} Products
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <Link to={`/shop-preview/${data.shop._id}`}>
-                  <div
-                    className={`${styles.button} mt-4 rounded-[4px] h-11 flex items-center`}
-                  >
-                    <span className="text-[#fff] flex items-center">
+                  <div className="bg-gradient-to-r from-gray-900 to-gray-600 text-white font-bold hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-900 hover:to-gray-600 hover:text-gray-200 duration-300 ease-in-out rounded-lg flex items-center py-3 px-4 justify-center mt-4">
+                    <span className="flex items-center justify-center">
                       Visit Shop <FaShop className="ml-2" />
                     </span>
                   </div>
                 </Link>
-                <h5 className="text-[16px] text-red-700 pt-1">
-                  {data.total_sell || data.sold_out || 0} SOLD OUT
-                </h5>
+                {data.total_sell || data.sold_out ? (
+                  <h5 className="text-[16px] text-red-700 mt-4 font-medium">
+                    {data.total_sell || data.sold_out || 0} SOLD OUT
+                  </h5>
+                ) : null}
               </div>
 
-              <div className="w-full 800px:w-[50%] py-4 pl-[40px] pr-[20px]">
+              <div className="w-full 800px:w-[50%] py-4 pl-[5px] 800px:pl-[40px] pr-[5px] 800px:pr-[20px]">
                 <h1 className="text-[25px] font-[600] font-Roboto text-[#48004f]">
                   {data.name || "Product Name"}
                 </h1>
@@ -191,22 +282,23 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   {data.description || "No description available"}
                 </p>
 
-                <div className="flex pt-6">
-                  <h4 className="font-bold text-[18px] text-[#4c0064] font-Roboto">
-                    {data.discount_price ||
-                      data.discountPrice ||
+                <div className="flex pt-6 items-center">
+                  <h2 className="font-bold text-[18px] text-[#8e0000] font-Roboto">
+                    Nrs{" "}
+                    {data.discountPrice ||
+                      data.discount_price ||
                       data.price ||
                       data.originalPrice ||
-                      0}{" "}
-                    Nrs
-                  </h4>
-                  {(data.price || data.originalPrice) &&
-                    (data.discount_price || data.discountPrice) && (
-                      <h3 className="font-[500] text-[13px] text-[#b03722] pl-3 mt-[2px] line-through">
-                        {data.price || data.originalPrice} Nrs
-                      </h3>
+                      0}
+                  </h2>
+                  {(data.discountPrice || data.discount_price) &&
+                    (data.originalPrice || data.price) && (
+                      <h4 className="font-[500] text-[14px] text-[#e32e0e] pl-3 mt-[-18px] line-through">
+                        Nrs {data.originalPrice || data.price}
+                      </h4>
                     )}
                 </div>
+
                 <div className="flex items-center mt-8 justify-between pr-3">
                   <div>
                     <button
@@ -245,14 +337,28 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                     )}
                   </div>
                 </div>
+
                 <div
-                  className={`${styles.button} mt-8 rounded-[4px] h-11 flex items-center`}
+                  className="bg-gradient-to-r from-gray-800 to-gray-500 text-white font-bold shadow-lg hover:cursor-pointer hover:bg-gradient-to-l hover:from-gray-800 hover:to-gray-500 hover:text-gray-200 duration-300 ease-in-out mt-10 rounded flex items-center py-3 justify-center"
                   onClick={() => addToCartHandler(data._id)}
                 >
-                  <span className="text-[#fff] flex items-center">
-                    Add to cart <AiOutlineShoppingCart className="ml-1" />
+                  <span className="flex items-center justify-center">
+                    Add to Cart <AiOutlineShoppingCart className="ml-2" />
                   </span>
                 </div>
+
+                {data.stock < 10 && (
+                  <div className="mt-4 text-orange-600 font-medium">
+                    Only {data.stock} items left in stock!
+                  </div>
+                )}
+
+                {data.category && (
+                  <div className="mt-4">
+                    <span className="font-medium">Category: </span>
+                    <span className="text-[#48004f]">{data.category}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

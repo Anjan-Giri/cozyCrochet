@@ -360,10 +360,10 @@ router.get(
         0
       );
 
-      // Get recent orders (last 5)
+      // Get recent orders (last 10) - increasing the number to have more data for time-of-day chart
       const recentOrders = await Order.find()
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(10) // Increased from 5 to 10 for better time of day data
         .populate("user", "name");
 
       // Monthly revenue statistics - last 12 months with all months included
@@ -422,6 +422,11 @@ router.get(
         })
         .reverse(); // Show oldest to newest
 
+      // Get all orders for time of day analysis
+      const allOrdersForTimeAnalysis = await Order.find()
+        .sort({ createdAt: -1 })
+        .limit(100); // Get a good sample size for time analysis
+
       res.status(200).json({
         success: true,
         stats: {
@@ -432,6 +437,7 @@ router.get(
           totalRevenue,
           recentOrders,
           monthlyRevenue,
+          allOrdersForTimeAnalysis,
         },
       });
     } catch (error) {

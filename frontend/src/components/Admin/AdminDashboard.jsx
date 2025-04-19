@@ -7,7 +7,6 @@ import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { AiOutlineArrowRight } from "react-icons/ai";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
 import {
   Area,
   AreaChart,
@@ -21,21 +20,17 @@ import {
   Legend,
   ResponsiveContainer,
   ComposedChart,
+  LabelList,
 } from "recharts";
-import {
-  FaBoxOpen,
-  FaClipboardList,
-  FaStore,
-  FaUsers,
-  FaChartLine,
-} from "react-icons/fa";
-import { MdAttachMoney } from "react-icons/md";
+import { FaBoxOpen, FaStore, FaUsers, FaChartLine } from "react-icons/fa";
 import { GiMoneyStack } from "react-icons/gi";
+import { BsFillCalendarCheckFill } from "react-icons/bs";
 
 const AdminDashboard = () => {
   const [admin, setAdmin] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeOfDayStats, setTimeOfDayStats] = useState([]);
   const navigate = useNavigate();
 
   // Format NPR currency
@@ -66,6 +61,14 @@ const AdminDashboard = () => {
           withCredentials: true,
         });
         setStats(data.stats);
+
+        // Generate time of day stats if we have orders
+        if (data.stats && data.stats.allOrdersForTimeAnalysis) {
+          const todStats = generateTimeOfDayStats(
+            data.stats.allOrdersForTimeAnalysis
+          );
+          setTimeOfDayStats(todStats);
+        }
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         toast.error("Error loading dashboard data");
@@ -74,6 +77,59 @@ const AdminDashboard = () => {
 
     fetchAdminData();
   }, [navigate]);
+
+  // Generate time-of-day sales breakdown
+  const generateTimeOfDayStats = (orders) => {
+    const timeSlots = [
+      {
+        name: "Morning (6-12)",
+        hours: [6, 7, 8, 9, 10, 11],
+        sales: 0,
+        orders: 0,
+      },
+      {
+        name: "Afternoon (12-17)",
+        hours: [12, 13, 14, 15, 16],
+        sales: 0,
+        orders: 0,
+      },
+      {
+        name: "Evening (17-21)",
+        hours: [17, 18, 19, 20],
+        sales: 0,
+        orders: 0,
+      },
+      {
+        name: "Night (21-6)",
+        hours: [21, 22, 23, 0, 1, 2, 3, 4, 5],
+        sales: 0,
+        orders: 0,
+      },
+    ];
+
+    // Use all orders from the system for more accurate data
+    orders.forEach((order) => {
+      try {
+        const orderDate = new Date(order.createdAt);
+        const hour = orderDate.getHours();
+
+        // Find the matching time slot
+        const slot = timeSlots.find((slot) => slot.hours.includes(hour));
+        if (slot) {
+          slot.sales += order.totalPrice || 0;
+          slot.orders += 1;
+        }
+      } catch (error) {
+        console.error("Error processing order time:", error);
+      }
+    });
+
+    // Calculate average order value
+    return timeSlots.map((slot) => ({
+      ...slot,
+      averageOrder: slot.orders > 0 ? slot.sales / slot.orders : 0,
+    }));
+  };
 
   const handleLogout = async () => {
     try {
@@ -87,18 +143,38 @@ const AdminDashboard = () => {
     }
   };
 
+  // Sort monthly data chronologically
+  const sortMonthlyData = (monthlyData) => {
+    // First convert to objects with date objects for proper sorting
+    const withDates = monthlyData.map((item) => {
+      const month = new Date(Date.parse(`${item.year}-${item.month}-01`));
+      return {
+        ...item,
+        dateObj: month,
+      };
+    });
+
+    // Sort by date (oldest to newest)
+    return withDates.sort((a, b) => a.dateObj - b.dateObj);
+  };
+
   // Chart Components
   const UserGrowthChart = () => {
-    const monthlyData = stats?.monthlyRevenue || [];
+    if (!stats?.monthlyRevenue) return null;
 
-    const userData = monthlyData.map((item, index, array) => {
+    // Sort months chronologically
+    const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
+
+    // Create progressive user growth data
+    const userData = sortedMonths.map((item, index, array) => {
+      // Calculate a progressive user count based on the current position in the array
       const progress = (index + 1) / array.length;
       const users = stats?.userCount
         ? Math.floor(stats.userCount * progress)
         : 0;
 
       return {
-        name: item.name,
+        name: `${item.name} ${item.year}`,
         users,
       };
     });
@@ -130,16 +206,20 @@ const AdminDashboard = () => {
   };
 
   const ShopGrowthChart = () => {
-    const monthlyData = stats?.monthlyRevenue || [];
+    if (!stats?.monthlyRevenue) return null;
 
-    const shopData = monthlyData.map((item, index, array) => {
+    // Sort months chronologically
+    const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
+
+    // Create progressive shop growth data
+    const shopData = sortedMonths.map((item, index, array) => {
       const progress = (index + 1) / array.length;
       const shops = stats?.shopCount
         ? Math.floor(stats.shopCount * progress)
         : 0;
 
       return {
-        name: item.name,
+        name: `${item.name} ${item.year}`,
         shops,
       };
     });
@@ -163,15 +243,65 @@ const AdminDashboard = () => {
     );
   };
 
+  const TimeOfDayChart = () => {
+    if (!timeOfDayStats || timeOfDayStats.length === 0) {
+      return (
+        <div className="h-64 flex items-center justify-center">
+          No time data available
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={timeOfDayStats}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            barSize={30}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="name"
+              scale="point"
+              padding={{ left: 30, right: 30 }}
+            />
+            <YAxis yAxisId="left" orientation="left" stroke="#ff9800" />
+            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+            <Tooltip
+              formatter={(value, name) => {
+                if (name === "Sales" || name === "Average Order Value")
+                  return [formatNPR(value), name];
+                return [value, name];
+              }}
+            />
+            <Legend />
+            <Bar yAxisId="left" dataKey="sales" name="Sales" fill="#ff9800" />
+            <Bar
+              yAxisId="right"
+              dataKey="orders"
+              name="Orders"
+              fill="#82ca9d"
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  };
+
   const RevenueChart = () => {
-    const revenueData =
-      stats?.monthlyRevenue?.map((item) => {
-        return {
-          name: item.name,
-          revenue: item.total || 0,
-          orders: item.count || 0,
-        };
-      }) || [];
+    if (!stats?.monthlyRevenue) return null;
+
+    // Sort months chronologically
+    const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
+
+    const revenueData = sortedMonths.map((item) => {
+      return {
+        name: `${item.name} ${item.year}`,
+        revenue: item.total || 0,
+        orders: item.count || 0,
+      };
+    });
 
     if (revenueData.length === 0) {
       return (
@@ -363,6 +493,17 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Revenue Chart - Full Width */}
+          <div className="mt-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                <FaChartLine className="mr-2" fill="#ff7300" />
+                Revenue & Orders Trend
+              </h3>
+              <RevenueChart />
+            </div>
+          </div>
+
           {/* Charts Section */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* User Growth Chart */}
@@ -384,14 +525,14 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Revenue Chart - Full Width */}
+          {/* Time of Day Orders Chart */}
           <div className="mt-6">
             <div className="bg-white p-4 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                <FaChartLine className="mr-2" fill="#ff7300" />
-                Revenue & Orders Trend
+                <BsFillCalendarCheckFill className="mr-2" fill="#ff9800" />
+                Orders by Time of Day
               </h3>
-              <RevenueChart />
+              <TimeOfDayChart />
             </div>
           </div>
 
