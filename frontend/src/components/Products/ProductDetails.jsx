@@ -249,7 +249,7 @@ const ProductDetails = ({ data }) => {
               <h3 className="text-[25px] font-[600] font-Roboto text-[#48004f]">
                 {data.name}
               </h3>
-              <p className="pt-4">{data.description}</p>
+              <p className="pt-4 whitespace-pre-line">{data.description}</p>
               <div className="flex pt-6 items-center">
                 <h2 className="font-bold text-[18px] text-[#8e0000] font-Roboto">
                   Nrs {data.discountPrice || data.originalPrice}
@@ -417,7 +417,9 @@ const ProductInfo = ({
 
         {active === 1 && (
           <div className="py-4">
-            <p className="font-Roboto text-[15px] pb-2">{data.description}</p>
+            <p className="font-Roboto text-[15px] pb-2 leading-6 whitespace-pre-line">
+              {data.description}
+            </p>
           </div>
         )}
 

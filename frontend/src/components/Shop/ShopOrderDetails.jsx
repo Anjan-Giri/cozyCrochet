@@ -143,6 +143,22 @@ const ShopOrderDetails = () => {
     return orderStatuses.slice(currentIndex);
   };
 
+  const getProductImage = (item) => {
+    const imageUrl =
+      (item.images && item.images[0]?.url) ||
+      (item.product?.images && item.product.images[0]?.url);
+
+    if (!imageUrl) return "/placeholder-image.png";
+
+    if (imageUrl.startsWith("http")) return imageUrl;
+
+    const baseUrl = server.replace("/api/v2", "").replace(/\/$/, "");
+
+    const imagePath = imageUrl.replace(/^\/?(uploads\/)?/, "");
+
+    return `${baseUrl}/uploads/${imagePath}`;
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-8">
       <div className={`${styles.section} bg-white rounded-lg shadow-md p-6`}>
@@ -208,12 +224,8 @@ const ShopOrderDetails = () => {
                   key={index}
                 >
                   <img
-                    src={
-                      (item.images && item.images[0]?.url) ||
-                      (item.product?.images && item.product.images[0]?.url) ||
-                      "/placeholder-image.png"
-                    }
-                    alt=""
+                    src={getProductImage(item)}
+                    alt="Product"
                     className="w-[80px] h-[80px] object-cover rounded-md"
                   />
                   <div className="ml-4 flex-grow">

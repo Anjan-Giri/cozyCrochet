@@ -7,7 +7,7 @@ import ContactAdmin from "../components/Contact/ContactAdmin.jsx";
 const ContactUsPage = () => {
   return (
     <>
-      <Header />
+      <Header activeHeading={5} />
       <ContactShop />
       <ContactAdmin />
       <Footer />

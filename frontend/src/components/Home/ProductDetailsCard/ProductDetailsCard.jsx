@@ -278,7 +278,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                 <h1 className="text-[25px] font-[600] font-Roboto text-[#48004f]">
                   {data.name || "Product Name"}
                 </h1>
-                <p className="pt-4">
+                <p className="pt-4 whitespace-pre-line">
                   {data.description || "No description available"}
                 </p>
 

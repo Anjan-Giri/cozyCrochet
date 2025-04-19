@@ -8,6 +8,7 @@ import {
   getEventRecommendations,
   addCalendarEvent,
   deleteCalendarEvent,
+  // getSmartRecommendations,
 } from "../../redux/actions/calendar";
 
 const EventCalendar = () => {
@@ -18,6 +19,7 @@ const EventCalendar = () => {
   const {
     events = [],
     recommendations = [],
+    // smartRecommendations = [],
     loading = false,
     recommendationsLoading = false,
     success = false,
@@ -46,6 +48,7 @@ const EventCalendar = () => {
     if (user) {
       dispatch(getCalendarEvents());
       dispatch(getEventRecommendations());
+      // dispatch(getSmartRecommendations());
     }
   }, [dispatch, user]);
 
@@ -381,9 +384,178 @@ const EventCalendar = () => {
             )}
           </div>
         </div>
+
+        {/* <div className="md:w-1/2">
+          <div className="w-full bg-white shadow rounded-lg p-4">
+            <h2 className="text-2xl font-bold mb-4">
+              <span className="flex items-center">
+                Smart Recommendations
+                <svg
+                  className="w-5 h-5 ml-2 text-blue-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.53 1.53 0 01-2.29.95c-1.37-.82-2.96.4-2.14 1.77.51.84.21 1.93-.63 2.44-1.37.82-.82 2.84.55 2.84.85 0 1.59.66 1.59 1.53 0 1.37 1.87 1.92 2.55.77.4-.67 1.35-.85 2.02-.45 1.37.82 2.96-.4 2.14-1.77-.51-.84-.21-1.93.63-2.44 1.37-.82.82-2.84-.55-2.84-.85 0-1.59-.66-1.59-1.53 0-.51-.14-.98-.38-1.34z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </h2>
+            {recommendationsLoading ? (
+              <p>
+                Analyzing your preferences for personalized recommendations...
+              </p>
+            ) : smartRecommendations && smartRecommendations.length === 0 ? (
+              <p>No upcoming event recommendations available.</p>
+            ) : (
+              <div className="space-y-6">
+                {smartRecommendations &&
+                  smartRecommendations.map((rec, index) => (
+                    <div
+                      key={index}
+                      className={`border rounded-lg overflow-hidden ${
+                        rec.urgency === "critical"
+                          ? "border-red-400"
+                          : rec.urgency === "high"
+                          ? "border-orange-400"
+                          : rec.urgency === "medium"
+                          ? "border-yellow-400"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <div
+                        className={`p-3 ${
+                          rec.urgency === "critical"
+                            ? "bg-red-50"
+                            : rec.urgency === "high"
+                            ? "bg-orange-50"
+                            : rec.urgency === "medium"
+                            ? "bg-yellow-50"
+                            : "bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold capitalize">
+                            {rec.event.eventType}
+                            {rec.event.relatedPerson &&
+                              ` - For: ${rec.event.relatedPerson}`}
+                          </h3>
+
+                          {rec.urgency === "critical" && (
+                            <span className="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                              {getEventDays(rec.event.date)} days left!
+                            </span>
+                          )}
+                          {rec.urgency === "high" && (
+                            <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                              Coming soon
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-600">
+                          {formatDate(rec.event.date)}
+                        </p>
+                      </div>
+
+                      <div className="p-3">
+                        <h4 className="font-medium mb-2">
+                          Personalized Recommendations:
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {rec.products.map((product, pidx) => (
+                            <div
+                              key={product._id}
+                              className="border rounded p-3 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex">
+                                <img
+                                  src={getImageUrl(product.images[0])}
+                                  alt={product.name}
+                                  className="w-20 h-20 object-cover mr-3 rounded"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/placeholder-image.png";
+                                  }}
+                                  loading="lazy"
+                                />
+                                <div>
+                                  <h5 className="font-medium text-sm">
+                                    {product.name}
+                                  </h5>
+                                  <div className="flex items-center mt-1">
+                                    <p className="text-sm font-bold text-gray-900">
+                                      Nrs.
+                                      {product.discountPrice?.toFixed(2) ||
+                                        product.originalPrice?.toFixed(2)}
+                                    </p>
+                                    {product.discountPrice &&
+                                      product.originalPrice >
+                                        product.discountPrice && (
+                                        <p className="ml-2 text-xs text-gray-500 line-through">
+                                          Nrs.
+                                          {product.originalPrice?.toFixed(2)}
+                                        </p>
+                                      )}
+                                  </div>
+
+                                  <div className="mt-2">
+                                    {rec.personalizationReasons[pidx] &&
+                                      rec.personalizationReasons[pidx]
+                                        .slice(0, 2)
+                                        .map((reason, ridx) => (
+                                          <div
+                                            key={ridx}
+                                            className="text-xs text-green-700 flex items-center"
+                                          >
+                                            <svg
+                                              className="w-3 h-3 mr-1"
+                                              fill="currentColor"
+                                              viewBox="0 0 20 20"
+                                            >
+                                              <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                              />
+                                            </svg>
+                                            {reason}
+                                          </div>
+                                        ))}
+                                  </div>
+
+                                  <a
+                                    href={`/product/${product.name
+                                      .replace(/\s+/g, "-")
+                                      .toLowerCase()}`}
+                                    className="text-blue-600 text-sm hover:underline block mt-2"
+                                  >
+                                    View Product
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
 export default EventCalendar;
+
+// function getEventDays(dateString) {
+//   const today = new Date();
+//   const eventDate = new Date(dateString);
+//   const diffTime = Math.abs(eventDate - today);
+//   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//   return diffDays;
+// }

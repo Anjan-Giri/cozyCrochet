@@ -66,7 +66,9 @@ const RegisterShop = () => {
           <h2 className="text-2xl font-bold text-purple-500">
             Become a Seller
           </h2>
-          <h1 className="text-3xl font-bold text-pink-600">cozyCrochet</h1>
+          <Link to="/">
+            <h1 className="text-3xl font-bold text-pink-600">cozyCrochet</h1>
+          </Link>
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>

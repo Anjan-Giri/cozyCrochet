@@ -3,6 +3,7 @@ import { createReducer } from "@reduxjs/toolkit";
 const initialState = {
   events: [],
   recommendations: [],
+  // smartRecommendations: [],
   loading: false,
   recommendationsLoading: false, // Added this field that was missing
   success: false,
@@ -83,6 +84,18 @@ export const calendarReducer = createReducer(initialState, (builder) => {
       state.success = false;
       state.error = action.payload;
     })
+
+    // .addCase("GetSmartRecommendationsRequest", (state) => {
+    //   state.recommendationsLoading = true;
+    // })
+    // .addCase("GetSmartRecommendationsSuccess", (state, action) => {
+    //   state.recommendationsLoading = false;
+    //   state.smartRecommendations = action.payload;
+    // })
+    // .addCase("GetSmartRecommendationsFail", (state, action) => {
+    //   state.recommendationsLoading = false;
+    //   state.error = action.payload;
+    // })
 
     // Clear errors and messages
     .addCase("clearCalendarErrors", (state) => {

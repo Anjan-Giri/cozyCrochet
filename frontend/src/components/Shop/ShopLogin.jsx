@@ -44,7 +44,9 @@ const ShopLogin = () => {
           <h2 className="text-2xl font-bold text-purple-500">
             Sign In to your Shop
           </h2>
-          <h1 className="text-3xl font-bold text-pink-600">cozyCrochet</h1>
+          <Link to="/">
+            <h1 className="text-3xl font-bold text-pink-600">cozyCrochet</h1>
+          </Link>
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
@@ -96,30 +98,6 @@ const ShopLogin = () => {
                   size={25}
                 />
               )}
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="remember-me"
-                id="remember-me"
-                className="h-4 w-4 text-purple-500 focus:ring-purple-500 rounded"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-purple-900"
-              >
-                Remember me
-              </label>
-            </div>
-            <div className="text-sm">
-              <a
-                href=".forgot-password"
-                className="font-medium text-purple-600 hover:text-pink-600"
-              >
-                Forgot your password?
-              </a>
             </div>
           </div>
           <div>

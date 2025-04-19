@@ -204,3 +204,46 @@ export const deleteCalendarEvent = (id) => async (dispatch) => {
     });
   }
 };
+
+// Get smart recommendations
+// export const getSmartRecommendations = () => async (dispatch) => {
+//   try {
+//     dispatch({ type: "GetSmartRecommendationsRequest" });
+
+//     // Add request logging
+//     console.log(
+//       `Sending GET request to: ${server}/calendar/smart-recommendations`
+//     );
+
+//     const { data } = await axios.get(
+//       `${server}/calendar/smart-recommendations`,
+//       {
+//         withCredentials: true,
+//       }
+//     );
+
+//     // Log successful response
+//     console.log("Smart recommendations received:", data);
+
+//     dispatch({
+//       type: "GetSmartRecommendationsSuccess",
+//       payload: data.recommendations,
+//     });
+//   } catch (error) {
+//     // Enhanced error handling
+//     const errorMessage =
+//       error.response?.data?.message ||
+//       error.message ||
+//       "Failed to load smart recommendations";
+
+//     console.error("Get smart recommendations error:", {
+//       status: error.response?.status,
+//       message: errorMessage,
+//     });
+
+//     dispatch({
+//       type: "GetSmartRecommendationsFail",
+//       payload: errorMessage,
+//     });
+//   }
+// };

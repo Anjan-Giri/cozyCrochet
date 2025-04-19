@@ -205,7 +205,8 @@ const CreateProductComp = () => {
           </div>
           <div className="w-[100%] 800px:w-[50%] px-8">
             <label className="block text-sm font-medium text-[#50007a] py-2">
-              Tags
+              Tags (Birthday, Anniversary, Wedding, Valentine, New Year,
+              Graduation)
             </label>
             <input
               type="text"
@@ -213,7 +214,7 @@ const CreateProductComp = () => {
               value={tags}
               className="block w-full px-4 py-2 border border-purple-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               onChange={(e) => setTags(e.target.value)}
-              placeholder="Enter your product tags..."
+              placeholder="enter what event relates to your product the most..."
             />
           </div>
         </div>
