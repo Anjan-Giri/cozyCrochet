@@ -1,7 +1,8 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export const server = "http://localhost:8000";
+// export const server = "http://localhost:8000";
+export const server = "https://cozycrochet-1.onrender.com";
 
 // Add to cart
 export const addToCart = (data) => async (dispatch) => {
