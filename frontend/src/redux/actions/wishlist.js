@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // export const server = "http://localhost:8000";
-export const server = "https://cozycrochet-1.onrender.com";
+export const server = "https://cozycrochet-2.onrender.com";
 
 // Helper function to save wishlist to local storage
 const saveWishlistToStorage = (wishlist) => {
