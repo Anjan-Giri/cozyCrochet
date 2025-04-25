@@ -187,6 +187,8 @@ router.get(
       res.cookie("token", null, {
         expires: new Date(Date.now()),
         httpOnly: true,
+        sameSite: "None", // Match the setting options
+        secure: true,
       });
 
       res.status(201).json({
