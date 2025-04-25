@@ -50,7 +50,11 @@ router.post("/create-shop", upload.single("avatar"), async (req, res, next) => {
 
     const activationToken = createActivationToken(seller);
 
-    const activationUrl = `http://localhost:3000/seller/activation/${activationToken}`;
+    // const activationUrl = `http://localhost:3000/seller/activation/${activationToken}`;
+    const activationUrl =
+      process.env.NODE_ENV === "production"
+        ? `https://cozycrochet.netlify.app/seller/activation/${activationToken}`
+        : `http://localhost:3000/seller/activation/${activationToken}`;
 
     try {
       await sendMail({
@@ -413,7 +417,12 @@ router.post(
       await shop.save({ validateBeforeSave: false });
 
       // Create reset URL
-      const resetUrl = `http://localhost:3000/seller/reset-password/${resetToken}`;
+      // const resetUrl = `http://localhost:3000/seller/reset-password/${resetToken}`;
+      const resetUrl =
+        process.env.NODE_ENV === "production"
+          ? `https://cozycrochet.netlify.app/seller/reset-password/${resetToken}`
+          : `http://localhost:3000/seller/reset-password/${resetToken}`;
+
       // Email message
       const message = `
         Hello ${shop.name},

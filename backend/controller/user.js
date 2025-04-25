@@ -50,7 +50,11 @@ router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
 
     const activationToken = createActivationToken(user);
 
-    const activationUrl = `http://localhost:3000/activation/${activationToken}`;
+    // const activationUrl = `http://localhost:3000/activation/${activationToken}`;
+    const activationUrl =
+      process.env.NODE_ENV === "production"
+        ? `https://cozycrochet.netlify.app/activation/${activationToken}`
+        : `http://localhost:3000/activation/${activationToken}`;
 
     try {
       await sendMail({
@@ -443,7 +447,12 @@ router.post(
       await user.save({ validateBeforeSave: false });
 
       // Create reset URL
-      const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      // const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      const resetUrl =
+        process.env.NODE_ENV === "production"
+          ? `https://cozycrochet.netlify.app/reset-password/${resetToken}`
+          : `http://localhost:3000/reset-password/${resetToken}`;
+
       // Email message
       const message = `
         Hello ${user.name},
