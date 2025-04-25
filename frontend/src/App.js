@@ -66,6 +66,8 @@ import ForgotPassword from "./components/ForgotPassword.jsx";
 import ResetPassword from "./components/ResetPassword.jsx";
 import { loadAdmin } from "./redux/actions/admin.js";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute.js";
+import ShopForgotPassword from "./components/Shop/ShopFprgotPassword.jsx";
+import ShopResetPassword from "./components/Shop/ShopResetPassword.jsx";
 
 const App = () => {
   const [stripeApikey, setStripeApikey] = useState("");
@@ -183,6 +185,11 @@ const App = () => {
         />
         <Route path="/shop-create" element={<CreateShopPage />} />
         <Route path="/shop-login" element={<ShopLoginPage />} />
+        <Route path="/shop-forgot-password" element={<ShopForgotPassword />} />
+        <Route
+          path="/seller/reset-password/:token"
+          element={<ShopResetPassword />}
+        />
         <Route
           path="/shop/:id"
           element={

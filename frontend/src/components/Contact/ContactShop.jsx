@@ -5,14 +5,15 @@ import { server } from "../../server";
 import { toast } from "react-toastify";
 import { BsChatSquareFill } from "react-icons/bs";
 import { FaStore, FaPhoneAlt, FaShoppingCart } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import Loader from "../Layout/Loader";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const ContactShop = () => {
   const { isAuthenticated, user } = useSelector((state) => state.user);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(false);
   const [shopDetails, setShopDetails] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   // Form data for authenticated users
   const [formData, setFormData] = useState({
@@ -98,8 +99,17 @@ const ContactShop = () => {
     }
   };
 
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isAuthenticated && !captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -122,7 +132,7 @@ const ContactShop = () => {
         // Submit guest form
         const { data } = await axios.post(
           `${server}/contact/contact-shop-public`,
-          guestFormData
+          { ...guestFormData, captchaToken }
         );
         toast.success(data.message);
         setGuestFormData({
@@ -133,6 +143,11 @@ const ContactShop = () => {
           message: "",
           orderDetails: "",
         });
+
+        if (window.grecaptcha) {
+          window.grecaptcha.reset();
+        }
+        setCaptchaToken(null);
       }
 
       setShopDetails(null);
@@ -333,12 +348,22 @@ const ContactShop = () => {
               ></textarea>
             </div>
 
+            {!isAuthenticated && (
+              <div className="mb-6 flex justify-center">
+                <ReCAPTCHA
+                  sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                  onChange={handleCaptchaChange}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
                 className="px-8 py-3 bg-[#50007a] text-white rounded-md font-semibold hover:bg-[#e94560] transition duration-300 shadow-md"
-                disabled={loading}
+                disabled={loading || (!isAuthenticated && !captchaToken)}
               >
                 {loading ? "Sending..." : "Send Message"}
               </button>

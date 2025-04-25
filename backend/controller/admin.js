@@ -451,17 +451,16 @@ router.get(
 //   "/init-first-admin",
 //   catchAsyncErrors(async (req, res, next) => {
 //     try {
-//       // Check if any admin already exists
+//       //checking if any admin already exists
 //       const adminExists = await Admin.findOne({});
 //       if (adminExists) {
 //         return next(new ErrorHandler("Initial admin already exists", 400));
 //       }
 
-//       // Create the admin (password: "admin123")
 //       const admin = await Admin.create({
 //         name: "Anjan Giri",
 //         email: "anjannn7768@gmail.com",
-//         password: "anjan@55441", // Will be auto-hashed by your schema pre-save hook
+//         password: "anjan@55441",
 //         avatar: {
 //           url: "default-admin.png",
 //           public_id: "default-admin",
@@ -473,7 +472,7 @@ router.get(
 //         message: "Initial admin created successfully",
 //         credentials: {
 //           email: "anjannn7768@gmail.com",
-//           password: "anjan@55441", // Display only once!
+//           password: "anjan@55441",
 //         },
 //       });
 //     } catch (error) {

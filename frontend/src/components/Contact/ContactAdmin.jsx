@@ -5,13 +5,14 @@ import { server } from "../../server";
 import { toast } from "react-toastify";
 import { BiSupport } from "react-icons/bi";
 import { FaRegEnvelope, FaRegQuestionCircle } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import Loader from "../Layout/Loader";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const ContactAdmin = () => {
   const { isAuthenticated, user } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [adminInfo, setAdminInfo] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   // Contact form categories
   const categories = [
@@ -76,8 +77,17 @@ const ContactAdmin = () => {
     }
   };
 
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isAuthenticated && !captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -99,7 +109,7 @@ const ContactAdmin = () => {
         // Submit guest form
         const { data } = await axios.post(
           `${server}/contact/contact-admin-public`,
-          guestFormData
+          { ...guestFormData, captchaToken }
         );
         toast.success(data.message);
         setGuestFormData({
@@ -109,6 +119,10 @@ const ContactAdmin = () => {
           message: "",
           category: "General Inquiry",
         });
+        if (window.grecaptcha) {
+          window.grecaptcha.reset();
+        }
+        setCaptchaToken(null);
       }
 
       setLoading(false);
@@ -303,12 +317,22 @@ const ContactAdmin = () => {
               </p>
             </div>
 
+            {!isAuthenticated && (
+              <div className="mb-6 flex justify-center">
+                <ReCAPTCHA
+                  sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                  onChange={handleCaptchaChange}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
                 className="px-8 py-3 bg-[#50007a] text-white rounded-md font-semibold hover:bg-[#e94560] transition duration-300 shadow-md"
-                disabled={loading}
+                disabled={loading || (!isAuthenticated && !captchaToken)}
               >
                 {loading ? "Sending..." : "Send Message"}
               </button>

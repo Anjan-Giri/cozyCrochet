@@ -6,6 +6,29 @@ const ErrorHandler = require("../utils/ErrorHandler.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { isAuthenticatedUser } = require("../middleware/auth.js");
 const sendMail = require("../utils/mail.js");
+const axios = require("axios");
+
+const verifyCaptcha = async (token) => {
+  if (!token) return false;
+
+  try {
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+
+    // Use proper method for reCAPTCHA verification
+    const response = await axios.post(verifyUrl, null, {
+      params: {
+        secret: secretKey,
+        response: token,
+      },
+    });
+
+    return response.data.success;
+  } catch (error) {
+    console.error("reCAPTCHA verification error:", error);
+    return false;
+  }
+};
 
 // Get all shops for the contact form dropdown
 router.get(
@@ -125,6 +148,18 @@ router.post(
         return next(
           new ErrorHandler(
             "Please provide shop, name, email, subject and message",
+            400
+          )
+        );
+      }
+
+      const { captchaToken } = req.body;
+      // Verify captcha for non-authenticated users
+      const isCaptchaValid = await verifyCaptcha(captchaToken);
+      if (!isCaptchaValid) {
+        return next(
+          new ErrorHandler(
+            "CAPTCHA verification failed. Please try again.",
             400
           )
         );
@@ -353,6 +388,18 @@ router.post(
         return next(
           new ErrorHandler(
             "Please provide name, email, subject and message",
+            400
+          )
+        );
+      }
+
+      const { captchaToken } = req.body;
+      // Verify captcha for non-authenticated users
+      const isCaptchaValid = await verifyCaptcha(captchaToken);
+      if (!isCaptchaValid) {
+        return next(
+          new ErrorHandler(
+            "CAPTCHA verification failed. Please try again.",
             400
           )
         );
