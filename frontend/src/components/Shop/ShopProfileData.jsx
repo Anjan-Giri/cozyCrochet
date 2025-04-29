@@ -7,7 +7,7 @@ import { getAllProductsShop } from "../../redux/actions/product";
 import { getAllOffersShop } from "../../redux/actions/offer";
 import Loader from "../Layout/Loader";
 import Ratings from "../Products/Ratings";
-import { server, backend_url } from "../../server"; // Import these from your server config
+import { server, backend_url } from "../../server";
 import axios from "axios";
 import { AiFillStar } from "react-icons/ai";
 import OfferCard from "../Home/Offer/OfferCard";
@@ -40,7 +40,6 @@ const ShopProfileData = ({ isOwner }) => {
     const fetchShopData = async () => {
       setLoading(true);
       try {
-        // Fetch updated shop info
         const shopResponse = await axios.get(
           `${server}/shop/get-shop-info/${id}`
         );
@@ -49,13 +48,11 @@ const ShopProfileData = ({ isOwner }) => {
           setShopData(shopResponse.data.shop);
         }
 
-        // Fetch all products for this specific shop to calculate ratings
         const productsResponse = await axios.get(
           `${server}/product/get-all-products-shop/${id}`
         );
 
         if (productsResponse.data.success) {
-          // Count the products
           const productsArray = productsResponse.data.products || [];
           setShopProductCount(productsArray.length);
 
@@ -67,21 +64,17 @@ const ShopProfileData = ({ isOwner }) => {
           const newRatingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
           productsArray.forEach((product) => {
-            // Count reviews
             const productReviews = product.reviews ? product.reviews.length : 0;
             reviewCount += productReviews;
 
-            // Collect all reviews for display
             if (product.reviews && product.reviews.length > 0) {
               allProductReviews = [...allProductReviews, ...product.reviews];
 
-              // Sum ratings for average calculation and count by rating value
               product.reviews.forEach((review) => {
                 if (review.rating) {
                   ratingSum += review.rating;
                   ratingCount++;
 
-                  // Count ratings by level (1-5)
                   const ratingLevel = Math.round(review.rating);
                   if (ratingLevel >= 1 && ratingLevel <= 5) {
                     newRatingCounts[ratingLevel] += 1;
@@ -95,7 +88,6 @@ const ShopProfileData = ({ isOwner }) => {
           setShopTotalReviews(reviewCount);
           setRatingCounts(newRatingCounts);
 
-          // Calculate average rating (with 1 decimal place)
           const avgRating =
             ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
           setShopAverageRating(avgRating);
@@ -115,29 +107,23 @@ const ShopProfileData = ({ isOwner }) => {
     useSelector((state) => state.offers)
   );
 
-  // Function to get avatar URL (similar to ProductDetails component)
   const getImageUrl = (image) => {
     if (!image) return "/no-image.png";
 
-    // Get the image path, whether from object or string
     const imagePath = typeof image === "object" ? image.url : image;
 
-    // If it's already a full URL
     if (imagePath && imagePath.startsWith("http")) {
       return imagePath;
     }
 
-    // Clean the image path by removing any leading slash or 'uploads/'
     const cleanImagePath = imagePath
       ? imagePath.replace(/^\/?(uploads\/)?/, "")
       : "";
     const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Construct the final URL
     return `${baseUrl}/uploads/${cleanImagePath}`;
   };
 
-  // Calculate percentage for ratings bar
   const calculatePercentage = (count) => {
     if (shopTotalReviews === 0) return 0;
     return Math.round((count / shopTotalReviews) * 100);
@@ -198,40 +184,6 @@ const ShopProfileData = ({ isOwner }) => {
             ))}
         </div>
       )}
-
-      {/* {active === 2 && (
-        <div className="w-full">
-          {loading ? (
-            <div className="w-full flex justify-center py-5">
-              <Loader />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[25px] lg:grid-cols-3 lg:gap-[25px] xl:grid-cols-4 xl:gap-[20px] mb-12 border-0">
-              {offers && offers.length > 0 ? (
-                offers.map((i, index) => (
-                  <OfferCard
-                    data={i}
-                    key={index}
-                    isShop={true}
-                    isEvent={true}
-                  />
-                ))
-              ) : (
-                <div className="w-full flex justify-center items-center bg-gray-50 rounded-lg p-8 mt-4">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium text-gray-700">
-                      No Events Available
-                    </h3>
-                    <p className="text-gray-500 mt-2">
-                      This shop doesn't have any running events at the moment.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )} */}
 
       {active === 2 && (
         <div className="w-full">

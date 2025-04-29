@@ -37,10 +37,8 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex justify-center items-center">
-      {/* Matching background animation */}
       <CrochetBackground />
 
-      {/* Admin Login form with exact same styling as user login */}
       <div className="bg-white rounded-lg shadow-lg py-10 px-24 w-1/2 z-10 relative">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-purple-500">Admin Sign In</h2>
@@ -103,7 +101,6 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          {/* Sign in button with exact same styling */}
           <div>
             <button
               type="submit"

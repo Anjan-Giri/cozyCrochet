@@ -14,10 +14,8 @@ const CreateOffer = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // State for selected product
   const [selectedProduct, setSelectedProduct] = useState("");
 
-  // States for form data
   const [images, setImages] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -30,12 +28,10 @@ const CreateOffer = () => {
   const [endDate, setEndDate] = useState(null);
   const [useProductImages, setUseProductImages] = useState(true);
 
-  // Fetch all products on component mount
   useEffect(() => {
     dispatch(getAllProductsShop(seller._id));
   }, [dispatch, seller._id]);
 
-  // Handle product selection
   const handleProductSelect = (e) => {
     const productId = e.target.value;
     setSelectedProduct(productId);
@@ -43,7 +39,6 @@ const CreateOffer = () => {
     if (productId) {
       const product = products.find((p) => p._id === productId);
       if (product) {
-        // Populate form with product data
         setName(product.name);
         setDescription(product.description);
         setCategory(product.category);
@@ -52,16 +47,13 @@ const CreateOffer = () => {
         setDiscountPrice(product.discountPrice);
         setStock(product.stock);
 
-        // Reset images to avoid confusion
         setImages([]);
       }
     } else {
-      // Reset form if no product selected
       resetForm();
     }
   };
 
-  // Reset form function
   const resetForm = () => {
     setName("");
     setDescription("");
@@ -77,7 +69,6 @@ const CreateOffer = () => {
     e.preventDefault();
 
     try {
-      // Validate required fields
       if (
         !selectedProduct ||
         !startDate ||
@@ -89,7 +80,6 @@ const CreateOffer = () => {
         return;
       }
 
-      // Validate prices
       if (originalPrice && Number(discountPrice) >= Number(originalPrice)) {
         toast.error("Discount price must be less than original price");
         return;
@@ -97,7 +87,6 @@ const CreateOffer = () => {
 
       const formData = new FormData();
 
-      // Only append images if not using product images
       if (!useProductImages) {
         if (images.length === 0) {
           toast.error("Please upload at least one image or use product images");
@@ -109,7 +98,6 @@ const CreateOffer = () => {
         });
       }
 
-      // Append fields
       formData.append("name", name);
       formData.append("description", description);
       formData.append("category", category);
@@ -118,7 +106,7 @@ const CreateOffer = () => {
       formData.append("discountPrice", discountPrice);
       formData.append("stock", stock);
       formData.append("shopId", seller._id);
-      formData.append("productId", selectedProduct); // Add reference to original product
+      formData.append("productId", selectedProduct);
       formData.append("startDate", startDate.toISOString());
       formData.append("endDate", endDate.toISOString());
 
@@ -164,7 +152,7 @@ const CreateOffer = () => {
     }
 
     setImages((prev) => [...prev, ...validFiles]);
-    setUseProductImages(false); // If user uploads images, don't use product images
+    setUseProductImages(false);
   };
 
   const today = new Date().toISOString().slice(0, 10);
@@ -258,7 +246,7 @@ const CreateOffer = () => {
             </div>
           </div>
 
-          {/* Product details section - readonly for some fields */}
+          {/* Product details section */}
           <div className="w-full 800px:flex block pb-3">
             <div className="w-[100%] 800px:w-[50%] px-8">
               <label className="block text-sm font-medium text-[#50007a] py-2">

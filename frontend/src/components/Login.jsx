@@ -40,10 +40,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex justify-center items-center">
-      {/* Floating crochet items background */}
       <CrochetBackground />
 
-      {/* Login form - keeping original width (w-1/2) */}
+      {/* Login form */}
       <div className="bg-white rounded-lg shadow-lg py-10 px-24 w-1/2 z-10 relative">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-purple-500">Sign In</h2>

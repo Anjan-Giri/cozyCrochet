@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 // export const server = "http://localhost:8000";
 export const server = "https://cozycrochet-2.onrender.com";
 
-// Helper function to save wishlist to local storage
+//save wishlist to local storage
 const saveWishlistToStorage = (wishlist) => {
   try {
     localStorage.setItem("userWishlist", JSON.stringify(wishlist));
@@ -13,7 +13,7 @@ const saveWishlistToStorage = (wishlist) => {
   }
 };
 
-// Helper function to get wishlist from local storage
+//get wishlist from local storage
 const getWishlistFromStorage = () => {
   try {
     const storedWishlist = localStorage.getItem("userWishlist");
@@ -57,10 +57,9 @@ export const addToWishlist = (data) => async (dispatch) => {
   }
 };
 
-// Fetch user's wishlist with local storage fallback
+// Fetch user's wishlist
 export const fetchWishlist = () => async (dispatch) => {
   try {
-    // First, check local storage
     const storedWishlist = getWishlistFromStorage();
 
     if (storedWishlist) {
@@ -70,12 +69,10 @@ export const fetchWishlist = () => async (dispatch) => {
       });
     }
 
-    // Then fetch from server to ensure latest data
     const { data } = await axios.get(`${server}/api/v2/wishlist/list`, {
       withCredentials: true,
     });
 
-    // Save to local storage and update Redux
     if (data.wishlist) {
       saveWishlistToStorage(data.wishlist);
       dispatch({
@@ -101,7 +98,6 @@ export const fetchWishlist = () => async (dispatch) => {
       payload: errorMessage,
     });
 
-    // Try to use stored wishlist if server fetch fails
     const storedWishlist = getWishlistFromStorage();
     if (storedWishlist) {
       dispatch({
@@ -124,7 +120,6 @@ export const removeFromWishlist = (data) => async (dispatch) => {
       }
     );
 
-    // Save to local storage
     saveWishlistToStorage(responseData.wishlist);
 
     dispatch({

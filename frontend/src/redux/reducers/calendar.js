@@ -5,13 +5,12 @@ const initialState = {
   recommendations: [],
   // smartRecommendations: [],
   loading: false,
-  recommendationsLoading: false, // Added this field that was missing
+  recommendationsLoading: false,
   success: false,
   error: null,
   successMessage: null,
 };
 
-// Export the reducer properly
 export const calendarReducer = createReducer(initialState, (builder) => {
   builder
     // Get calendar events

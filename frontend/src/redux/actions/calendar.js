@@ -1,19 +1,17 @@
 import axios from "axios";
 import { server } from "../../server";
 
-// Get all calendar events
+//get all calendar events
 export const getCalendarEvents = () => async (dispatch) => {
   try {
     dispatch({ type: "GetCalendarEventsRequest" });
 
-    // Add request logging
     console.log(`Sending GET request to: ${server}/calendar/events`);
 
     const { data } = await axios.get(`${server}/calendar/events`, {
       withCredentials: true,
     });
 
-    // Log successful response
     console.log("Calendar events received:", data);
 
     dispatch({
@@ -21,7 +19,6 @@ export const getCalendarEvents = () => async (dispatch) => {
       payload: data.events,
     });
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message ||
       error.message ||
@@ -40,12 +37,11 @@ export const getCalendarEvents = () => async (dispatch) => {
   }
 };
 
-// Get recommendations for upcoming events
+//get recommendations for upcoming events
 export const getEventRecommendations = () => async (dispatch) => {
   try {
     dispatch({ type: "GetEventRecommendationsRequest" });
 
-    // Use the correct endpoint with your server URL
     const { data } = await axios.get(`${server}/calendar/recommendations`, {
       withCredentials: true,
     });
@@ -67,12 +63,11 @@ export const getEventRecommendations = () => async (dispatch) => {
   }
 };
 
-// Add a calendar event
+//add a calendar event
 export const addCalendarEvent = (eventData) => async (dispatch) => {
   try {
     dispatch({ type: "AddCalendarEventRequest" });
 
-    // Log the event data being sent
     console.log("Adding calendar event:", {
       ...eventData,
       date: new Date(eventData.date).toISOString(),
@@ -92,11 +87,9 @@ export const addCalendarEvent = (eventData) => async (dispatch) => {
       },
     });
 
-    // Refresh events list after adding
     dispatch(getCalendarEvents());
     dispatch(getEventRecommendations());
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message ||
       error.message ||
@@ -115,12 +108,11 @@ export const addCalendarEvent = (eventData) => async (dispatch) => {
   }
 };
 
-// Update a calendar event
+//update a calendar event
 export const updateCalendarEvent = (id, eventData) => async (dispatch) => {
   try {
     dispatch({ type: "UpdateCalendarEventRequest" });
 
-    // Log the event data being updated
     console.log(`Updating calendar event ${id}:`, eventData);
 
     const { data } = await axios.put(
@@ -137,11 +129,9 @@ export const updateCalendarEvent = (id, eventData) => async (dispatch) => {
       },
     });
 
-    // Refresh events list after updating
     dispatch(getCalendarEvents());
     dispatch(getEventRecommendations());
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message ||
       error.message ||
@@ -161,12 +151,11 @@ export const updateCalendarEvent = (id, eventData) => async (dispatch) => {
   }
 };
 
-// Delete a calendar event
+//delete a calendar event
 export const deleteCalendarEvent = (id) => async (dispatch) => {
   try {
     dispatch({ type: "DeleteCalendarEventRequest" });
 
-    // Log the event being deleted
     console.log(`Deleting calendar event: ${id}`);
 
     const { data } = await axios.delete(
@@ -182,11 +171,9 @@ export const deleteCalendarEvent = (id) => async (dispatch) => {
       },
     });
 
-    // Refresh events list after deletion
     dispatch(getCalendarEvents());
     dispatch(getEventRecommendations());
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message ||
       error.message ||

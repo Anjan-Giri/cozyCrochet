@@ -24,14 +24,11 @@ const Payment = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  // Modify the useEffect where you get orderData
   useEffect(() => {
     const storedOrderData = JSON.parse(localStorage.getItem("latestOrder"));
 
     if (storedOrderData) {
-      // Check if cart exists and has the correct structure
       if (storedOrderData.cart && storedOrderData.cart.items) {
-        // Handle the structure where cart is an object with items array
         const updatedItems = storedOrderData.cart.items.map((item) => {
           if (!item.shopId && item.product && item.product.shop) {
             return { ...item, shopId: item.product.shop };
@@ -47,7 +44,6 @@ const Payment = () => {
           },
         });
       } else if (Array.isArray(storedOrderData.cart)) {
-        // Handle the structure where cart is already an array
         const updatedCart = storedOrderData.cart.map((item) => {
           if (!item.shopId && item.product && item.product.shop) {
             return { ...item, shopId: item.product.shop };
@@ -60,13 +56,11 @@ const Payment = () => {
           cart: updatedCart,
         });
       } else {
-        // If neither structure is valid, set as is
         setOrderData(storedOrderData);
       }
     }
   }, []);
 
-  // Create order structure based on the determined cart structure
   const order = {
     cart:
       orderData?.cart?.items ||

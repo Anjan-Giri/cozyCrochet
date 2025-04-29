@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const [timeOfDayStats, setTimeOfDayStats] = useState([]);
   const navigate = useNavigate();
 
-  // Format NPR currency
+  //format NPR currency
   const formatNPR = (amount) => {
     return `Nrs. ${Number(amount).toLocaleString("en-IN")}`;
   };
@@ -62,7 +62,7 @@ const AdminDashboard = () => {
         });
         setStats(data.stats);
 
-        // Generate time of day stats if we have orders
+        //generate time of day stats if we have orders
         if (data.stats && data.stats.allOrdersForTimeAnalysis) {
           const todStats = generateTimeOfDayStats(
             data.stats.allOrdersForTimeAnalysis
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
     fetchAdminData();
   }, [navigate]);
 
-  // Generate time-of-day sales breakdown
+  //generate time-of-day sales breakdown
   const generateTimeOfDayStats = (orders) => {
     const timeSlots = [
       {
@@ -107,13 +107,13 @@ const AdminDashboard = () => {
       },
     ];
 
-    // Use all orders from the system for more accurate data
+    //all orders
     orders.forEach((order) => {
       try {
         const orderDate = new Date(order.createdAt);
         const hour = orderDate.getHours();
 
-        // Find the matching time slot
+        //matching time slot
         const slot = timeSlots.find((slot) => slot.hours.includes(hour));
         if (slot) {
           slot.sales += order.totalPrice || 0;
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
       }
     });
 
-    // Calculate average order value
+    //calculate average order value
     return timeSlots.map((slot) => ({
       ...slot,
       averageOrder: slot.orders > 0 ? slot.sales / slot.orders : 0,
@@ -143,9 +143,8 @@ const AdminDashboard = () => {
     }
   };
 
-  // Sort monthly data chronologically
+  //sort monthly data
   const sortMonthlyData = (monthlyData) => {
-    // First convert to objects with date objects for proper sorting
     const withDates = monthlyData.map((item) => {
       const month = new Date(Date.parse(`${item.year}-${item.month}-01`));
       return {
@@ -154,20 +153,17 @@ const AdminDashboard = () => {
       };
     });
 
-    // Sort by date (oldest to newest)
     return withDates.sort((a, b) => a.dateObj - b.dateObj);
   };
 
-  // Chart Components
+  //chart Components
   const UserGrowthChart = () => {
     if (!stats?.monthlyRevenue) return null;
 
-    // Sort months chronologically
     const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
 
-    // Create progressive user growth data
+    //progressive user growth data
     const userData = sortedMonths.map((item, index, array) => {
-      // Calculate a progressive user count based on the current position in the array
       const progress = (index + 1) / array.length;
       const users = stats?.userCount
         ? Math.floor(stats.userCount * progress)
@@ -208,10 +204,9 @@ const AdminDashboard = () => {
   const ShopGrowthChart = () => {
     if (!stats?.monthlyRevenue) return null;
 
-    // Sort months chronologically
     const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
 
-    // Create progressive shop growth data
+    //progressive shop growth data
     const shopData = sortedMonths.map((item, index, array) => {
       const progress = (index + 1) / array.length;
       const shops = stats?.shopCount
@@ -292,7 +287,6 @@ const AdminDashboard = () => {
   const RevenueChart = () => {
     if (!stats?.monthlyRevenue) return null;
 
-    // Sort months chronologically
     const sortedMonths = sortMonthlyData([...stats.monthlyRevenue]);
 
     const revenueData = sortedMonths.map((item) => {
@@ -351,7 +345,7 @@ const AdminDashboard = () => {
     );
   };
 
-  // DataGrid columns for recent orders
+  //dataGrid columns for recent orders
   const columns = [
     { field: "id", headerName: "Order ID", minWidth: 150, flex: 0.7 },
     {
@@ -377,7 +371,6 @@ const AdminDashboard = () => {
     },
   ];
 
-  // Prepare rows for DataGrid
   const rows = [];
   if (stats?.recentOrders && stats.recentOrders.length > 0) {
     stats.recentOrders.forEach((order) => {
@@ -493,7 +486,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Revenue Chart - Full Width */}
+          {/* Revenue Chart */}
           <div className="mt-6">
             <div className="bg-white p-4 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">

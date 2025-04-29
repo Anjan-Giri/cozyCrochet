@@ -76,7 +76,7 @@ export const deleteOffer = (id) => async (dispatch) => {
   }
 };
 
-// In your offer actions
+//get offers
 export const getAllOffers = () => async (dispatch) => {
   try {
     dispatch({

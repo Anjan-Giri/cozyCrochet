@@ -45,13 +45,11 @@ const ShopInfo = ({ isOwner }) => {
         try {
           setShopStatsLoading(true);
 
-          // Fetch all products for this shop
           const response = await axios.get(
             `${server}/product/get-all-products-shop/${shopData._id}`
           );
 
           if (response.data.success) {
-            // Set total products count
             const productsArray = response.data.products || [];
             setShopProductCount(productsArray.length);
 
@@ -70,7 +68,6 @@ const ShopInfo = ({ isOwner }) => {
               }
             });
 
-            // Calculate average rating (with 1 decimal place)
             if (ratingCount > 0) {
               const avgRating = (ratingSum / ratingCount).toFixed(1);
               setShopRating(`${avgRating} / 5 (${ratingCount} reviews)`);
@@ -113,7 +110,6 @@ const ShopInfo = ({ isOwner }) => {
   const getAvatarUrl = React.useCallback((avatar) => {
     if (!avatar) return "/default-avatar.png";
 
-    // If the avatar is already a full URL
     if (
       typeof avatar === "string" &&
       (avatar.startsWith("http://") || avatar.startsWith("https://"))
@@ -121,17 +117,13 @@ const ShopInfo = ({ isOwner }) => {
       return avatar;
     }
 
-    // If avatar is an object with url property
     const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
 
-    // Remove any leading slashes and 'uploads/'
     const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
 
-    // Construct the full URL using the backend_url
     return `${backend_url}uploads/${cleanPath}`;
   }, []);
 
-  // Memoize the avatar URL
   const avatarUrl = React.useMemo(() => {
     return imageError ? "/default-avatar.png" : getAvatarUrl(shopData?.avatar);
   }, [shopData?.avatar, imageError, getAvatarUrl]);

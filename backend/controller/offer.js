@@ -2,12 +2,12 @@ const express = require("express");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { upload } = require("../multer");
 const Shop = require("../model/shop");
-const Product = require("../model/product"); // Add product model import
+const Product = require("../model/product");
 const router = express.Router();
 const Offer = require("../model/offer");
 const { isSeller } = require("../middleware/auth");
 const fs = require("fs");
-const ErrorHandler = require("../utils/ErrorHandler"); // Make sure to import ErrorHandler
+const ErrorHandler = require("../utils/ErrorHandler");
 
 // create offer
 router.post(
@@ -16,19 +16,19 @@ router.post(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const shopId = req.body.shopId;
-      const productId = req.body.productId; // Get productId from request
+      const productId = req.body.productId;
 
       if (!shopId) {
         return next(new ErrorHandler("Shop ID is required", 400));
       }
 
-      // Validate shop exists
+      //validating shop
       const shop = await Shop.findById(shopId);
       if (!shop) {
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Find the original product if productId is provided
+      //find original product
       let originalProduct = null;
       if (productId) {
         originalProduct = await Product.findById(productId);
@@ -36,7 +36,7 @@ router.post(
           return next(new ErrorHandler("Original product not found", 404));
         }
 
-        // Verify the product belongs to the same shop
+        //verify the product is of same shop
         if (originalProduct.shopId.toString() !== shopId.toString()) {
           return next(
             new ErrorHandler("Product does not belong to this shop", 403)
@@ -44,22 +44,21 @@ router.post(
         }
       }
 
-      // Validate required fields
       if (!req.body.name || !req.body.description || !req.body.category) {
         return next(new ErrorHandler("Please fill all required fields", 400));
       }
 
-      // Handle image uploads - use product images if no new images are uploaded and productId is provided
+      //image uploads
       let images = [];
 
       if (req.files && req.files.length > 0) {
-        // Format images according to the schema if new images are uploaded
+        //formatting images
         images = req.files.map((file) => ({
           public_id: `products/${file.filename}`,
           url: `uploads/${file.filename}`,
         }));
       } else if (originalProduct) {
-        // Use original product images if no new images are uploaded
+        //using original product images if no new images are uploaded
         images = originalProduct.images;
       } else {
         return next(
@@ -67,7 +66,7 @@ router.post(
         );
       }
 
-      // Validate offer dates
+      //offer dates
       if (!req.body.startDate || !req.body.endDate) {
         return next(
           new ErrorHandler("Start and end dates are required for offers", 400)
@@ -81,7 +80,7 @@ router.post(
         return next(new ErrorHandler("End date must be after start date", 400));
       }
 
-      // Create offer with validated data
+      //create offer with validated data
       const offerData = {
         name: req.body.name,
         description: req.body.description,
@@ -97,7 +96,7 @@ router.post(
         shopId: shopId,
         shop: shop,
         sold_out: 0,
-        productId: productId || null, // Store reference to original product
+        productId: productId || null,
       };
 
       const offerProduct = await Offer.create(offerData);
@@ -146,12 +145,11 @@ router.delete(
         return next(new ErrorHandler("Offer not found", 500));
       }
 
-      // Only delete images if they're not shared with an original product
+      //delete images if they're not of original product
       if (!offerData.productId) {
-        // These are unique offer images, safe to delete
+        //offer images
         offerData.images.forEach((image) => {
-          // Extract filename from the url path
-          const filename = image.url.split("/").pop(); // This gets just the filename
+          const filename = image.url.split("/").pop();
           const filePath = `uploads/${filename}`;
 
           try {

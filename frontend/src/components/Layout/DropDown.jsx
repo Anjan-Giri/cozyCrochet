@@ -11,7 +11,6 @@ const DropDown = ({ categoriesData, setDropDown }) => {
     setDropDown(false);
   };
 
-  // Show loading state if no categories yet
   if (!categoriesData || categoriesData.length === 0) {
     return (
       <div className="pb-4 w-[270px] bg-white absolute z-30 rounded-b-md shadow-sm">

@@ -33,7 +33,6 @@ const ResetPassword = () => {
 
       toast.success(res.data.message);
 
-      // Redirect to login page after successful password reset
       setTimeout(() => {
         navigate("/login");
       }, 2000);

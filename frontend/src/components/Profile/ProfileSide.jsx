@@ -25,11 +25,9 @@ const ProfileSide = ({ active, setActive }) => {
   const navigate = useNavigate();
 
   const handleClick = (id, route) => {
-    // If it's the logout item (id 7), call logoutHandler
     if (id === 6) {
       logoutHandler();
     } else {
-      // For other items, set active
       setActive(id);
     }
   };

@@ -19,7 +19,7 @@ export const sellerReducer = createReducer(initialState, (builder) => {
       state.isSeller = false;
       state.error = action.payload;
     })
-    // Add logout cases
+    // logout cases
     .addCase("LogoutRequest", (state) => {
       state.isLoading = true;
     })

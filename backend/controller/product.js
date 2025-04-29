@@ -21,31 +21,31 @@ router.post(
         return next(new ErrorHandler("Shop ID is required", 400));
       }
 
-      // Validate shop exists
+      //validate if shop exists
       const shop = await Shop.findById(shopId);
       if (!shop) {
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Validate required fields
+      //validate required fields
       if (!req.body.name || !req.body.description || !req.body.category) {
         return next(new ErrorHandler("Please fill all required fields", 400));
       }
 
-      // Handle image uploads
+      //handling images
       if (!req.files || req.files.length === 0) {
         return next(
           new ErrorHandler("Please upload at least one product image", 400)
         );
       }
 
-      // Format images according to the schema
+      //formattin images according to the schema
       const images = req.files.map((file) => ({
-        public_id: `products/${file.filename}`, // Create a public_id using filename
-        url: `uploads/${file.filename}`, // Create URL path to the uploaded file
+        public_id: `products/${file.filename}`,
+        url: `uploads/${file.filename}`,
       }));
 
-      // Create product with validated data
+      //create product with validated data
       const productData = {
         name: req.body.name,
         description: req.body.description,
@@ -92,7 +92,7 @@ router.get(
   })
 );
 
-// delete product of a shop
+// delete product of shop
 router.delete(
   "/delete-shop-product/:id",
   isSeller,
@@ -105,10 +105,10 @@ router.delete(
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Fix image deletion
+      //image deletion
       productData.images.forEach((image) => {
-        // Extract filename from the url path
-        const filename = image.url.split("/").pop(); // This gets just the filename
+        //extracting filename from the url path
+        const filename = image.url.split("/").pop();
         const filePath = `uploads/${filename}`;
 
         try {
@@ -126,7 +126,6 @@ router.delete(
       const product = await Product.findByIdAndDelete(productId);
 
       res.status(200).json({
-        // Changed from 201 to 200 for consistency
         success: true,
         message: "Product deleted successfully",
       });
@@ -188,19 +187,19 @@ router.put(
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Check if seller owns this product
+      //checking if seller owns product
       if (product.shopId !== req.body.shopId && req.seller.role !== "Admin") {
         return next(
           new ErrorHandler("You are not authorized to update this product", 403)
         );
       }
 
-      // Validate required fields
+      //validate required fields
       if (!req.body.name || !req.body.description || !req.body.category) {
         return next(new ErrorHandler("Please fill all required fields", 400));
       }
 
-      // Update basic product data
+      //update basic product data
       product.name = req.body.name;
       product.description = req.body.description;
       product.category = req.body.category;
@@ -209,14 +208,14 @@ router.put(
       product.discountPrice = req.body.discountPrice;
       product.stock = req.body.stock;
 
-      // Handle new images if provided
+      //new images if provided
       if (req.files && req.files.length > 0) {
         const newImages = req.files.map((file) => ({
           public_id: `products/${file.filename}`,
           url: `uploads/${file.filename}`,
         }));
 
-        // If we have old images data from the request (for partial image updates)
+        //old images data
         if (req.body.oldImages) {
           let oldImages = [];
 
@@ -226,11 +225,9 @@ router.put(
             return next(new ErrorHandler("Invalid old images data", 400));
           }
 
-          // Combine old and new images
+          //combinining old and new images
           product.images = [...oldImages, ...newImages];
         } else {
-          // If no old images specified, replace with new ones
-          // First, delete the old image files
           product.images.forEach((image) => {
             const filename = image.url.split("/").pop();
             const filePath = `uploads/${filename}`;
@@ -248,7 +245,6 @@ router.put(
         }
       }
 
-      // Save the updated product
       await product.save();
 
       res.status(200).json({
@@ -268,7 +264,6 @@ router.get(
   "/get-all-categories",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Find all unique categories from products
       const categories = await Product.distinct("category");
 
       res.status(200).json({
@@ -290,12 +285,11 @@ router.put(
       const { user, rating, comment, productId, orderId, cartItemId } =
         req.body;
 
-      // Validate required fields
       if (!productId || !orderId || !cartItemId) {
         return next(new ErrorHandler("All IDs are required for review", 400));
       }
 
-      // 1. Update Product Reviews
+      //reviews
       const product = await Product.findById(productId);
       if (!product) {
         return next(new ErrorHandler("Product not found", 404));
@@ -310,7 +304,7 @@ router.put(
         createdAt: new Date(),
       };
 
-      // Check for existing review
+      //checking for existing review
       const existingReviewIndex = product.reviews.findIndex(
         (rev) => rev.user && rev.user._id.toString() === user._id.toString()
       );
@@ -321,19 +315,19 @@ router.put(
         product.reviews.push(reviewData);
       }
 
-      // Update average rating
+      //update average rating
       product.ratings =
         product.reviews.reduce((acc, item) => acc + item.rating, 0) /
         product.reviews.length;
       await product.save({ validateBeforeSave: false });
 
-      // 2. Update Order's Cart Item
+      //update Order's Cart Item
       const order = await Order.findById(orderId);
       if (!order) {
         return next(new ErrorHandler("Order not found", 404));
       }
 
-      // Find and validate the cart item
+      //validate the cart item
       const cartItemIndex = order.cart.findIndex(
         (item) => item._id.toString() === cartItemId
       );
@@ -344,7 +338,7 @@ router.put(
 
       const cartItem = order.cart[cartItemIndex];
 
-      // Verify product matches
+      //verify product matches
       const itemProductId =
         cartItem.product?._id?.toString() ||
         cartItem.product?.toString() ||
@@ -354,7 +348,7 @@ router.put(
         return next(new ErrorHandler("Product doesn't match cart item", 400));
       }
 
-      // Update the cart item
+      //update the cart item
       order.cart[cartItemIndex] = {
         ...cartItem,
         isReviewed: true,

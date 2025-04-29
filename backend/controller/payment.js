@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const stripe = require("stripe"); // Import Stripe but don't initialize yet
+const stripe = require("stripe");
 
 router.post(
   "/process",
   catchAsyncErrors(async (req, res, next) => {
-    // Initialize Stripe inside the route handler
     const stripeClient = stripe(process.env.STRIPE_SECRET_KEY);
 
     const myPayment = await stripeClient.paymentIntents.create({

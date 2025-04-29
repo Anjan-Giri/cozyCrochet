@@ -49,28 +49,23 @@ const ProductDetails = ({ data }) => {
     () => (image) => {
       if (!image) return "/no-image.png";
 
-      // Get the image path, whether from object or string
       const imagePath = typeof image === "object" ? image.url : image;
 
-      // If it's already a full URL
       if (imagePath && imagePath.startsWith("http")) {
         return imagePath;
       }
 
-      // Clean the image path by removing any leading slash or 'uploads/'
       const cleanImagePath = imagePath
         ? imagePath.replace(/^\/?(uploads\/)?/, "")
         : "";
       const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-      // Construct the final URL
       return `${baseUrl}/uploads/${cleanImagePath}`;
     },
     [imageError]
   );
 
   const addToCartHandler = (id) => {
-    // Check if cart items exist and is an array
     const itemExists = cart?.items
       ? cart.items.some((i) => i.product._id === id)
       : false;
@@ -88,7 +83,6 @@ const ProductDetails = ({ data }) => {
   };
 
   useEffect(() => {
-    // Change from wishlist.find to checking if wishlist exists and has items
     if (
       wishlist &&
       wishlist.items &&
@@ -113,7 +107,6 @@ const ProductDetails = ({ data }) => {
   const getShopAvatarUrl = (avatar) => {
     if (!avatar) return "/default-avatar.png";
 
-    // If the avatar is already a full URL
     if (
       typeof avatar === "string" &&
       (avatar.startsWith("http://") || avatar.startsWith("https://"))
@@ -121,29 +114,24 @@ const ProductDetails = ({ data }) => {
       return avatar;
     }
 
-    // If avatar is an object with url property
     const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
 
     if (!avatarPath) return "/default-avatar.png";
 
-    // Remove any leading slashes and 'uploads/'
     const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
 
-    // Clean the backend_url to remove /api/v2 if present
     const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Construct the full URL using the backend_url
     return `${baseUrl}/uploads/${cleanPath}`;
   };
 
-  // Fetch shop data and calculate ratings
+  //fetch shop data and calculate ratings
   useEffect(() => {
     const fetchShopData = async () => {
       if (data?.shop?._id) {
         try {
           setLoading(true);
 
-          // Fetch updated shop info
           const shopResponse = await axios.get(
             `${server}/shop/get-shop-info/${data.shop._id}`
           );
@@ -152,29 +140,24 @@ const ProductDetails = ({ data }) => {
             setShopData(shopResponse.data.shop);
           }
 
-          // Fetch all products for this specific shop to calculate ratings
           const productsResponse = await axios.get(
             `${server}/product/get-all-products-shop/${data.shop._id}`
           );
 
           if (productsResponse.data.success) {
-            // Count the products
             const productsArray = productsResponse.data.products || [];
             setShopProductCount(productsArray.length);
 
-            // Calculate total shop reviews by summing all product reviews
             let reviewCount = 0;
             let ratingSum = 0;
             let ratingCount = 0;
 
             productsArray.forEach((product) => {
-              // Count reviews
               const productReviews = product.reviews
                 ? product.reviews.length
                 : 0;
               reviewCount += productReviews;
 
-              // Sum ratings for average calculation
               if (product.reviews && product.reviews.length > 0) {
                 product.reviews.forEach((review) => {
                   if (review.rating) {
@@ -187,7 +170,6 @@ const ProductDetails = ({ data }) => {
 
             setShopTotalReviews(reviewCount);
 
-            // Calculate average rating (with 1 decimal place)
             const avgRating =
               ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
             setShopAverageRating(avgRating);
@@ -308,7 +290,6 @@ const ProductDetails = ({ data }) => {
                   Add to Cart <AiOutlineShoppingCart className="ml-2" />
                 </span>
               </div>
-              {/* Shop Info with Dynamic Ratings */}
               <div className="flex items-center pt-10">
                 <Link to={`/shop-preview/${data.shop._id}`}>
                   <img

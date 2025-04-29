@@ -15,7 +15,7 @@ const ContactShop = () => {
   const [shopDetails, setShopDetails] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
 
-  // Form data for authenticated users
+  //form data for authenticated users
   const [formData, setFormData] = useState({
     shopId: "",
     subject: "",
@@ -23,7 +23,7 @@ const ContactShop = () => {
     orderDetails: "",
   });
 
-  // Form data for non-authenticated users
+  //form data for non-authenticated users
   const [guestFormData, setGuestFormData] = useState({
     shopId: "",
     name: "",
@@ -54,7 +54,6 @@ const ContactShop = () => {
   const handleShopChange = async (e) => {
     const shopId = e.target.value;
 
-    // Update form data
     if (isAuthenticated) {
       setFormData({
         ...formData,
@@ -115,7 +114,6 @@ const ContactShop = () => {
       setLoading(true);
 
       if (isAuthenticated) {
-        // Submit authenticated user form
         const { data } = await axios.post(
           `${server}/contact/contact-shop`,
           formData,
@@ -129,7 +127,6 @@ const ContactShop = () => {
           orderDetails: "",
         });
       } else {
-        // Submit guest form
         const { data } = await axios.post(
           `${server}/contact/contact-shop-public`,
           { ...guestFormData, captchaToken }
@@ -240,7 +237,6 @@ const ContactShop = () => {
               </div>
             )}
 
-            {/* Guest Contact Information (for non-authenticated users) */}
             {!isAuthenticated && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>

@@ -65,7 +65,6 @@ const Checkout = () => {
         )
       : 0;
 
-  // shipping cost variable
   const shipping = subTotalPrice * 0.05;
 
   const handleSubmit = async (e) => {
@@ -84,7 +83,6 @@ const Checkout = () => {
 
           // Check if this coupon is for specific products only
           if (codeData.selectedProducts) {
-            // Filter items that match both shop and selected product name
             const eligibleItems =
               cart && cart.items
                 ? cart.items.filter(
@@ -101,7 +99,7 @@ const Checkout = () => {
               return;
             }
 
-            // Calculate discount based on only eligible products
+            // Calculate discount based on eligible products
             const eligiblePrice = eligibleItems.reduce(
               (acc, item) =>
                 acc +
@@ -109,10 +107,9 @@ const Checkout = () => {
               0
             );
 
-            // Apply other checks and calculations
             handleDiscountCalculation(eligiblePrice, codeData);
           } else {
-            // Check for shop-wide coupon (any product from the shop)
+            //check for shop-wide coupon
             const eligibleItems =
               cart && cart.items
                 ? cart.items.filter((item) => item.product.shopId === shopId)
@@ -124,7 +121,6 @@ const Checkout = () => {
               return;
             }
 
-            // Calculate based on all eligible shop items
             const eligiblePrice = eligibleItems.reduce(
               (acc, item) =>
                 acc +
@@ -132,7 +128,6 @@ const Checkout = () => {
               0
             );
 
-            // Apply other checks and calculations
             handleDiscountCalculation(eligiblePrice, codeData);
           }
         } else {
@@ -148,7 +143,6 @@ const Checkout = () => {
   };
 
   const handleDiscountCalculation = (eligiblePrice, codeData) => {
-    // Check if meets minimum amount requirement
     if (codeData.minAmount > 0 && eligiblePrice < codeData.minAmount) {
       toast.error(
         `Minimum purchase of Nrs. ${codeData.minAmount} required for this code`
@@ -157,10 +151,9 @@ const Checkout = () => {
       return;
     }
 
-    // Calculate discount
     let discount = (eligiblePrice * codeData.value) / 100;
 
-    // Apply maximum discount limit if set
+    //apply maximum discount limit
     if (codeData.maxAmount > 0 && discount > codeData.maxAmount) {
       discount = codeData.maxAmount;
       toast.info(`Maximum discount of Nrs. ${codeData.maxAmount} applied`);

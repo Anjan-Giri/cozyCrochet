@@ -12,6 +12,7 @@ const sendToken = require("../utils/jwtToken.js");
 const { isAuthenticatedUser } = require("../middleware/auth.js");
 const crypto = require("crypto");
 
+//user create
 router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -46,8 +47,6 @@ router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
 
     // console.log(user);
 
-    // const newUser = await User.create(user);
-
     const activationToken = createActivationToken(user);
 
     // const activationUrl = `http://localhost:3000/activation/${activationToken}`;
@@ -73,11 +72,9 @@ router.post("/create-user", upload.single("avatar"), async (req, res, next) => {
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
-  // res.status(201).json({ success: true, newUser });
 });
 
 //activationTojen
-
 const createActivationToken = (user) => {
   return jwt.sign(user, process.env.ACTIVATION_SECRET_KEY, {
     expiresIn: "5m",
@@ -85,7 +82,6 @@ const createActivationToken = (user) => {
 };
 
 //user activate
-
 router.post(
   "/activation",
   catchAsyncErrors(async (req, res, next) => {
@@ -124,7 +120,6 @@ router.post(
 );
 
 //login user
-
 router.post(
   "/login-user",
   catchAsyncErrors(async (req, res, next) => {
@@ -155,7 +150,6 @@ router.post(
 );
 
 //user load
-
 router.get(
   "/getuser",
   isAuthenticatedUser,
@@ -178,7 +172,6 @@ router.get(
 );
 
 //logout
-
 router.get(
   "/logout",
   isAuthenticatedUser,
@@ -187,7 +180,7 @@ router.get(
       res.cookie("token", null, {
         expires: new Date(Date.now()),
         httpOnly: true,
-        sameSite: "None", // Match the setting options
+        sameSite: "None",
         secure: true,
       });
 
@@ -202,7 +195,6 @@ router.get(
 );
 
 //user update
-
 router.put(
   "/update-user",
   isAuthenticatedUser,
@@ -210,12 +202,10 @@ router.put(
     try {
       const { name, email, password, phoneNumber } = req.body;
 
-      // Validate inputs
       if (!email || !password) {
         return next(new ErrorHandler("Email and password are required", 400));
       }
 
-      // Find user by email - fixed syntax
       const user = await User.findOne({ email }).select("+password");
 
       if (!user) {
@@ -228,7 +218,6 @@ router.put(
         return next(new ErrorHandler("Invalid password", 400));
       }
 
-      // Update user fields
       user.name = name;
       user.email = email;
       if (phoneNumber !== undefined) {
@@ -255,14 +244,12 @@ router.put(
   upload.single("image"),
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Check if file was uploaded
       if (!req.file) {
         return next(new ErrorHandler("No image file provided", 400));
       }
 
       const userExist = await User.findById(req.user.id);
 
-      // Check if user exists
       if (!userExist) {
         return next(new ErrorHandler("User not found", 404));
       }
@@ -270,13 +257,12 @@ router.put(
       console.log("Current user avatar:", userExist.avatar);
       console.log("New file uploaded:", req.file);
 
-      // Handle existing avatar deletion with better error handling
+      //existing avatar deletion
       if (userExist.avatar && userExist.avatar.url) {
         try {
           const existAvatarPath = `uploads/${userExist.avatar.public_id}`;
           console.log("Attempting to delete:", existAvatarPath);
 
-          // Only attempt to delete if the file exists
           if (fs.existsSync(existAvatarPath)) {
             fs.unlinkSync(existAvatarPath);
             console.log("Previous avatar deleted successfully");
@@ -285,7 +271,6 @@ router.put(
           }
         } catch (deleteErr) {
           console.log("Error deleting previous avatar:", deleteErr);
-          // Continue with the update even if deletion fails
         }
       }
 
@@ -305,7 +290,6 @@ router.put(
 
       console.log("User updated successfully:", user);
 
-      // Send a response back to the client
       res.status(200).json({
         success: true,
         message: "Avatar updated successfully",
@@ -331,7 +315,9 @@ router.put(
       );
 
       if (sameAddress) {
-        return next(new ErrorHandler(`${req.body.addressType} already exists`));
+        return next(
+          new ErrorHandler(`${req.body.addressType} already exists`, 400)
+        );
       }
 
       const addressExist = user.addresses.find(
@@ -363,7 +349,7 @@ router.delete(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const userId = req.user._id;
-      const addressId = req.params.addressId; // Changed from req.params._id to req.params.addressId
+      const addressId = req.params.addressId;
 
       const result = await User.updateOne(
         { _id: userId },
@@ -384,7 +370,6 @@ router.delete(
 );
 
 //password update
-
 router.put(
   "/update-password",
   isAuthenticatedUser,
@@ -417,7 +402,7 @@ router.put(
   })
 );
 
-// Request password reset
+//password reset request
 router.post(
   "/forgot-password",
   catchAsyncErrors(async (req, res, next) => {
@@ -434,28 +419,24 @@ router.post(
         return next(new ErrorHandler("User not found with this email", 404));
       }
 
-      // Generate reset token
       const resetToken = crypto.randomBytes(20).toString("hex");
 
-      // Hash and add to user document
       user.resetPasswordToken = crypto
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
 
-      // Token valid for 15 minutes
+      //valid for 15 minutes
       user.resetPasswordTime = Date.now() + 15 * 60 * 1000;
 
       await user.save({ validateBeforeSave: false });
 
-      // Create reset URL
       // const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
       const resetUrl =
         process.env.NODE_ENV === "production"
           ? `https://cozycrochet.netlify.app/reset-password/${resetToken}`
           : `http://localhost:3000/reset-password/${resetToken}`;
 
-      // Email message
       const message = `
         Hello ${user.name},
 
@@ -492,18 +473,16 @@ router.post(
   })
 );
 
-// Reset password
+//reset password
 router.post(
   "/reset-password/:token",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Hash the token from URL
       const resetPasswordToken = crypto
         .createHash("sha256")
         .update(req.params.token)
         .digest("hex");
 
-      // Find user with this token and valid expiry time
       const user = await User.findOne({
         resetPasswordToken,
         resetPasswordTime: { $gt: Date.now() },
@@ -515,7 +494,6 @@ router.post(
         );
       }
 
-      // Validate passwords
       const { password, confirmPassword } = req.body;
 
       if (!password || !confirmPassword) {
@@ -526,7 +504,6 @@ router.post(
         return next(new ErrorHandler("Passwords do not match", 400));
       }
 
-      // Update password
       user.password = password;
       user.resetPasswordToken = undefined;
       user.resetPasswordTime = undefined;

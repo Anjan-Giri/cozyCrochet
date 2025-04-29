@@ -19,18 +19,17 @@ router.post(
 
       //properly identify the shop for each item
       for (const item of cart) {
-        // Extract the shopId using the correct path based on item structure
         let shopId;
         if (item.shopId && typeof item.shopId === "object" && item.shopId._id) {
-          shopId = item.shopId._id; // Handle case where shopId is an object with _id
+          shopId = item.shopId._id;
         } else if (item.shopId) {
-          shopId = item.shopId; // Handle case where shopId is already a string
+          shopId = item.shopId;
         } else if (item.product && item.product.shopId) {
-          shopId = item.product.shopId; // Use product's shopId if available
+          shopId = item.product.shopId;
         } else if (item.product && item.product.shop && item.product.shop._id) {
-          shopId = item.product.shop._id; // Handle case where shop is an object with _id
+          shopId = item.product.shop._id;
         } else if (item.product && item.product.shop) {
-          shopId = item.product.shop; // Handle case where shop is already a string
+          shopId = item.product.shop;
         } else {
           console.log("Warning: Could not determine shop for item:", item);
           continue;
@@ -42,12 +41,10 @@ router.post(
           } for shop: ${shopId}`
         );
 
-        // Initialize array for this shop if it doesn't exist
         if (!shopItemsMap[shopId]) {
           shopItemsMap[shopId] = [];
         }
 
-        // Add item to appropriate shop's array
         shopItemsMap[shopId].push(item);
       }
 
@@ -97,7 +94,7 @@ router.post(
         const order = await Order.create(orderData);
         orders.push(order);
 
-        // Update product inventory for each item in this order
+        //update product inventory
         for (const item of items) {
           if (item.product && item.product._id) {
             const product = await Product.findById(item.product._id);
@@ -110,9 +107,7 @@ router.post(
         }
       }
 
-      // Send order confirmation email
       if (user && user.email) {
-        // Prepare order details for email
         const orderDate = new Date().toLocaleDateString();
         const orderItems = cart
           .map((item) => {
@@ -133,7 +128,6 @@ router.post(
         const paymentMethod = paymentInfo?.type || "Online Payment";
         const orderStatus = "Processing";
 
-        // Create email message
         const emailMessage = `
           Hello ${user.name},
 
@@ -174,7 +168,6 @@ router.post(
           Thank you for shopping with us!
         `;
 
-        // Send the email
         try {
           await sendMail({
             email: user.email,
@@ -184,7 +177,6 @@ router.post(
           console.log(`Order confirmation email sent to ${user.email}`);
         } catch (emailError) {
           console.error("Failed to send order confirmation email:", emailError);
-          // Don't return an error, just log it - order creation should still succeed
         }
       }
 
@@ -225,10 +217,8 @@ router.get(
       const shopId = req.params.shopId;
       console.log("Looking for orders with shopId:", shopId);
 
-      // Try to find orders where shopId is directly in the document
       let orders = await Order.find({ shopId: shopId }).sort({ createdAt: -1 });
 
-      // If no orders found, try alternative approach - checking if shopId is in the cart items
       if (orders.length === 0) {
         orders = await Order.find({
           $or: [
@@ -254,7 +244,6 @@ router.get(
 );
 
 //order status update by seller
-
 router.put(
   "/update-order-status/:id",
   catchAsyncErrors(async (req, res, next) => {
@@ -265,10 +254,10 @@ router.put(
         return next(new ErrorHandler("Order not found", 404));
       }
 
-      // Update the order status
+      //update order status
       order.status = req.body.status;
 
-      // Set delivered date if status is "Delivered"
+      //delivered date if status is delivered
       if (req.body.status === "Delivered") {
         order.deliveredAt = Date.now();
 

@@ -21,7 +21,6 @@ const AdminSidebar = ({ handleLogout }) => {
         isSidebarOpen ? "w-64" : "w-20"
       } bg-gray-800 text-white transition-all duration-300 ease-in-out h-screen sticky top-0 overflow-hidden`}
     >
-      {/* Logo and Toggle Button */}
       <div className="p-4 flex justify-between items-center border-b border-gray-700">
         {isSidebarOpen ? (
           <h2 className="text-xl font-bold">Admin Panel</h2>
@@ -119,7 +118,7 @@ const AdminSidebar = ({ handleLogout }) => {
         </ul>
       </nav>
 
-      {/* Logout Button - Fixed at Bottom */}
+      {/* Logout Buttonn */}
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
         <button
           onClick={handleLogout}

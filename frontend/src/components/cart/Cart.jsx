@@ -20,18 +20,16 @@ const Cart = ({ setOpenCart }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user's cart when component mounts
     dispatch(fetchCart())
       .then(() => setLoading(false))
       .catch(() => setLoading(false));
   }, [dispatch]);
 
-  // Calculate total price
+  //calculate total price
   const totalPrice =
     cart?.items?.reduce((acc, item) => acc + item.quantity * item.price, 0) ||
     0;
 
-  // Handle error
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -44,7 +42,6 @@ const Cart = ({ setOpenCart }) => {
     }
   };
 
-  // If loading, show loading state
   if (loading) {
     return (
       <div className="fixed top-0 left-0 w-full h-screen bg-[#0000004b] z-10 flex items-center justify-center">
@@ -212,7 +209,6 @@ const CartItem = ({ data, dispatch }) => {
         </div>
       </div>
 
-      {/* Positioned remove icon at right edge */}
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <RxCross1
           size={16}

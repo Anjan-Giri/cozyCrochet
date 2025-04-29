@@ -5,7 +5,7 @@ const ErrorHandler = require("../utils/ErrorHandler");
 const router = express.Router();
 const { isSeller } = require("../middleware/auth");
 
-// create code
+//create code
 router.post(
   "/create-code",
   isSeller,
@@ -54,14 +54,14 @@ router.post(
   })
 );
 
-// get all codes
+//get all codes
 router.get(
   "/get-code/:id",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const codes = await Code.find({ shop: req.params.id }).sort({
         createdAt: -1,
-      }); // Added sorting by creation date
+      }); //sorting by creation date
 
       res.status(200).json({
         success: true,
@@ -73,16 +73,15 @@ router.get(
   })
 );
 
-// delete code route
+//delete code route
 router.delete(
   "/delete-code/:id",
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Add check to ensure seller can only delete their own codes
       const code = await Code.findOne({
         _id: req.params.id,
-        shop: req.seller.id, // Assuming isSeller middleware adds seller to req
+        shop: req.seller.id,
       });
 
       if (!code) {
@@ -101,7 +100,7 @@ router.delete(
   })
 );
 
-// get code value by its name
+//get code value by its name
 router.get(
   "/get-code-value/:name",
   catchAsyncErrors(async (req, res, next) => {

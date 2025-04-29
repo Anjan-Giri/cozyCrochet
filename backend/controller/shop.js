@@ -76,7 +76,6 @@ router.post("/create-shop", upload.single("avatar"), async (req, res, next) => {
 });
 
 //activationTojen
-
 const createActivationToken = (seller) => {
   return jwt.sign(seller, process.env.ACTIVATION_SECRET_KEY, {
     expiresIn: "5m",
@@ -84,7 +83,6 @@ const createActivationToken = (seller) => {
 };
 
 //seller activate
-
 router.post(
   "/activation",
   catchAsyncErrors(async (req, res, next) => {
@@ -127,7 +125,6 @@ router.post(
 );
 
 //seller login
-
 router.post(
   "/login-shop",
   catchAsyncErrors(async (req, res, next) => {
@@ -158,7 +155,6 @@ router.post(
 );
 
 //seller load
-
 router.get(
   "/getseller",
   isSeller,
@@ -182,7 +178,6 @@ router.get(
 );
 
 //logout
-
 router.get(
   "/logout",
   isSeller,
@@ -208,13 +203,11 @@ router.get(
   "/top-shops",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // First get all shops
       const shops = await Shop.find().select("name avatar");
 
-      // Get product counts for each shop using your existing schema
+      //product counts for each shop
       const shopsWithProducts = await Promise.all(
         shops.map(async (shop) => {
-          // Count products for this shop using string ID
           const productCount = await Product.countDocuments({
             shopId: shop._id.toString(),
           });
@@ -228,7 +221,7 @@ router.get(
         })
       );
 
-      // Sort by product count and get top shops
+      //sorting by product count
       const topShops = shopsWithProducts
         .sort((a, b) => b.productCount - a.productCount)
         .slice(0, 3);
@@ -243,7 +236,7 @@ router.get(
   })
 );
 
-// Get shop info by ID (public route)
+//get shop info
 router.get(
   "/get-shop-info/:id",
   catchAsyncErrors(async (req, res, next) => {
@@ -254,7 +247,6 @@ router.get(
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Count total products for this shop
       const totalProducts = await Product.countDocuments({
         shopId: shop._id.toString(),
       });
@@ -289,14 +281,12 @@ router.put(
   upload.single("image"),
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Check if file was uploaded
       if (!req.file) {
         return next(new ErrorHandler("No image file provided", 400));
       }
 
       const userExist = await Shop.findById(req.seller._id);
 
-      // Check if user exists
       if (!userExist) {
         return next(new ErrorHandler("User not found", 404));
       }
@@ -304,13 +294,13 @@ router.put(
       console.log("Current user avatar:", userExist.avatar);
       console.log("New file uploaded:", req.file);
 
-      // Handle existing avatar deletion with better error handling
+      //avatar deletion
       if (userExist.avatar && userExist.avatar.url) {
         try {
           const existAvatarPath = `uploads/${userExist.avatar.public_id}`;
           console.log("Attempting to delete:", existAvatarPath);
 
-          // Only attempt to delete if the file exists
+          //checking if the file exists
           if (fs.existsSync(existAvatarPath)) {
             fs.unlinkSync(existAvatarPath);
             console.log("Previous avatar deleted successfully");
@@ -319,7 +309,6 @@ router.put(
           }
         } catch (deleteErr) {
           console.log("Error deleting previous avatar:", deleteErr);
-          // Continue with the update even if deletion fails
         }
       }
 
@@ -339,7 +328,6 @@ router.put(
 
       console.log("Seller updated successfully:", user);
 
-      // Send a response back to the client
       res.status(200).json({
         success: true,
         message: "Avatar updated successfully",
@@ -402,28 +390,25 @@ router.post(
         return next(new ErrorHandler("Shop not found with this email", 404));
       }
 
-      // Generate reset token
       const resetToken = crypto.randomBytes(20).toString("hex");
 
-      // Hash and add to shop document
+      //hashing
       shop.resetPasswordToken = crypto
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
 
-      // Token valid for 15 minutes
+      //token valid for 15 minutes
       shop.resetPasswordTime = Date.now() + 15 * 60 * 1000;
 
       await shop.save({ validateBeforeSave: false });
 
-      // Create reset URL
       // const resetUrl = `http://localhost:3000/seller/reset-password/${resetToken}`;
       const resetUrl =
         process.env.NODE_ENV === "production"
           ? `https://cozycrochet.netlify.app/seller/reset-password/${resetToken}`
           : `http://localhost:3000/seller/reset-password/${resetToken}`;
 
-      // Email message
       const message = `
         Hello ${shop.name},
 
@@ -460,18 +445,17 @@ router.post(
   })
 );
 
-// Reset password for shops
+//reset password
 router.post(
   "/reset-password/:token",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Hash the token from URL
       const resetPasswordToken = crypto
         .createHash("sha256")
         .update(req.params.token)
         .digest("hex");
 
-      // Find shop with this token and valid expiry time
+      //finding shop with token and valid expiry time
       const shop = await Shop.findOne({
         resetPasswordToken,
         resetPasswordTime: { $gt: Date.now() },
@@ -483,7 +467,7 @@ router.post(
         );
       }
 
-      // Validate passwords
+      //validating passwords
       const { password, confirmPassword } = req.body;
 
       if (!password || !confirmPassword) {
@@ -494,7 +478,7 @@ router.post(
         return next(new ErrorHandler("Passwords do not match", 400));
       }
 
-      // Update password
+      //update password
       shop.password = password;
       shop.resetPasswordToken = undefined;
       shop.resetPasswordTime = undefined;

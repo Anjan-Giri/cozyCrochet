@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from "react";
 
-// Unified background component that can be used by both Admin and User login pages
 const CrochetBackground = () => {
-  // Array of colors for yarn balls and circles
   const colors = [
-    "#f472b6", // Pink
-    "#a855f7", // Purple
-    "#60a5fa", // Blue
-    "#34d399", // Green
-    "#fbbf24", // Yellow
-    "#fb923c", // Orange
-    "#f87171", // Red
-    "#d8b4fe", // Lavender
-    "#c4b5fd", // Light purple
-    "#bae6fd", // Light blue
+    "#f472b6",
+    "#a855f7",
+    "#60a5fa",
+    "#34d399",
+    "#fbbf24",
+    "#fb923c",
+    "#f87171",
+    "#d8b4fe",
+    "#c4b5fd",
+    "#bae6fd",
   ];
 
   // Generate items for background

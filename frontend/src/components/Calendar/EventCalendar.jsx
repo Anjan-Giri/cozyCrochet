@@ -15,7 +15,6 @@ const EventCalendar = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user || {});
 
-  // Use default values to prevent destructuring errors
   const {
     events = [],
     recommendations = [],
@@ -52,7 +51,6 @@ const EventCalendar = () => {
     }
   }, [dispatch, user]);
 
-  // Reset form and close it when an event is successfully added
   useEffect(() => {
     if (success && successMessage) {
       setShowEventForm(false);
@@ -62,7 +60,6 @@ const EventCalendar = () => {
         relatedPerson: "",
       });
 
-      // Clear success message after 3 seconds
       const timer = setTimeout(() => {
         dispatch({ type: "clearCalendarMessages" });
       }, 3000);
@@ -71,7 +68,6 @@ const EventCalendar = () => {
     }
   }, [success, successMessage, dispatch]);
 
-  // Clear error after 5 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
@@ -99,7 +95,6 @@ const EventCalendar = () => {
     }
   };
 
-  // Function to check if a date has an event
   const tileContent = ({ date, view }) => {
     if (view === "month" && events && events.length > 0) {
       const hasEvent = events.some((event) => {
@@ -126,7 +121,7 @@ const EventCalendar = () => {
     }
   };
 
-  // Function to format date for display
+  //format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -136,16 +131,13 @@ const EventCalendar = () => {
     });
   };
 
-  // Function to properly format image URL - similar to how ProductCard does it
   const getImageUrl = (imageData) => {
     if (!imageData?.url) return "/placeholder-image.png";
 
-    // If the URL is already a complete URL, use it directly
     if (imageData.url.startsWith("http")) {
       return imageData.url;
     }
 
-    // Create a proper URL by handling path variations
     const baseUrl = server.replace(/\/api\/v2$/, "").replace(/\/$/, "");
     const imagePath = imageData.url.replace(/^\/?(uploads\/)?/, "");
 

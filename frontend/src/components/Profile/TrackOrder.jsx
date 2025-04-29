@@ -22,7 +22,6 @@ const TrackOrder = () => {
 
   const data = orders && orders.find((item) => item._id === id);
 
-  // Track steps based on order status
   const getStepCompleted = (status) => {
     switch (status) {
       case "Processing":
@@ -44,7 +43,6 @@ const TrackOrder = () => {
 
   const stepCompleted = data ? getStepCompleted(data.status) : 0;
 
-  // Status messages with more detailed descriptions
   const getStatusMessage = (status) => {
     switch (status) {
       case "Processing":
@@ -64,7 +62,6 @@ const TrackOrder = () => {
     }
   };
 
-  // Get appropriate badge color for status
   const getStatusColor = (status) => {
     switch (status) {
       case "Processing":

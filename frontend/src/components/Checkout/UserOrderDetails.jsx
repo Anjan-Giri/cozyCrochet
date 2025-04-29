@@ -31,9 +31,8 @@ const UserOrderDetails = () => {
 
   const reviewHandler = async (e) => {
     try {
-      e.preventDefault(); // Prevent default form behavior if called from a form
+      e.preventDefault();
 
-      // Validate required state
       if (!selectedItem) {
         toast.error("Please select a product to review");
         return;
@@ -44,11 +43,10 @@ const UserOrderDetails = () => {
         return;
       }
 
-      // Extract IDs from different possible structures
       const productId =
         selectedItem.product?._id || selectedItem.productId || selectedItem._id;
 
-      const cartItemId = selectedItem._id; // This is the cart item's own ID
+      const cartItemId = selectedItem._id;
 
       if (!productId || !cartItemId) {
         console.error("Missing IDs in selected item:", selectedItem);
@@ -56,7 +54,6 @@ const UserOrderDetails = () => {
         return;
       }
 
-      // Debug log before submission
       console.log("Submitting review with:", {
         productId,
         cartItemId,
@@ -69,7 +66,6 @@ const UserOrderDetails = () => {
         },
       });
 
-      // Submit review
       const response = await axios.put(
         `${server}/product/create-review`,
         {
@@ -90,30 +86,25 @@ const UserOrderDetails = () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-          timeout: 10000, // 10 second timeout
+          timeout: 10000,
         }
       );
 
-      // Handle success
       toast.success(response.data.message || "Review submitted successfully!");
 
-      // Refresh data
       dispatch(getAllUserOrders(user._id));
 
-      // Close modal and reset form
       setOpen(false);
       setSelectedItem(null);
       setRating(1);
       setComment("");
 
-      // Debug log after success
       console.log("Review submitted successfully", {
         productId,
         orderId: id,
         newRating: response.data.product?.ratings,
       });
     } catch (error) {
-      // Enhanced error handling
       console.error("Review submission failed:", {
         error: error.response?.data || error.message,
         config: error.config?.data,
@@ -164,11 +155,10 @@ const UserOrderDetails = () => {
     );
   }
 
-  // Function to get cart items regardless of data structure
   const getCartItems = () => {
     if (!data) return [];
 
-    // If cart is an array, use it directly
+    // If cart is an array
     if (Array.isArray(data.cart)) {
       return data.cart;
     }
@@ -177,14 +167,11 @@ const UserOrderDetails = () => {
     if (data.cart && Array.isArray(data.cart.items)) {
       return data.cart.items;
     }
-
-    // If none of the above, return empty array
     return [];
   };
 
   const cartItems = getCartItems();
 
-  // Get appropriate badge color for status
   const getStatusColor = (status) => {
     switch (status) {
       case "Processing":
@@ -205,25 +192,18 @@ const UserOrderDetails = () => {
   };
 
   const getProductImage = (item) => {
-    // Extract the image URL from various possible structures
     const imageUrl =
       (item.images && item.images[0]?.url) ||
       (item.product?.images && item.product.images[0]?.url);
 
-    // If no image was found, return placeholder
     if (!imageUrl) return "/placeholder-image.png";
 
-    // If the URL is already absolute (starts with http), use it directly
     if (imageUrl.startsWith("http")) return imageUrl;
 
-    // Handle relative URLs by prefixing the server URL
-    // Remove /api/v2 from the server URL if it exists
     const baseUrl = server.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Clean up the image path by removing leading slashes and uploads/ if present
     const imagePath = imageUrl.replace(/^\/?(uploads\/)?/, "");
 
-    // Return the complete URL
     return `${baseUrl}/uploads/${imagePath}`;
   };
 
@@ -343,7 +323,6 @@ const UserOrderDetails = () => {
           {open && selectedItem && (
             <div className="w-full fixed top-0 left-0 h-screen bg-[#0005] z-50 flex items-center justify-center">
               <div className="w-[90%] md:w-[50%] bg-white rounded-lg shadow-lg overflow-hidden">
-                {/* Header with matching gradient to the rest of the site */}
                 <div className="w-full flex justify-between items-center border-b border-gray-200 bg-[#50007a] p-4">
                   <h2 className="text-xl md:text-2xl font-semibold text-white">
                     Product Review
@@ -358,7 +337,6 @@ const UserOrderDetails = () => {
 
                 {/* Content */}
                 <div className="p-6">
-                  {/* Product info with matching border style from other components */}
                   <div className="flex items-center p-4 border-2 border-[#50007a] rounded-md bg-white mb-6">
                     <img
                       src={getProductImage(selectedItem)}
@@ -383,7 +361,6 @@ const UserOrderDetails = () => {
                     </div>
                   </div>
 
-                  {/* Rating section with matching color scheme */}
                   <div className="mb-6">
                     <h5 className="text-lg font-medium text-[#50007a] mb-2">
                       Your Rating <span className="text-[#e94560]">*</span>
@@ -422,7 +399,6 @@ const UserOrderDetails = () => {
                     </div>
                   </div>
 
-                  {/* Comment section with matching form styling */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-[#50007a] py-2">
                       Your Review
@@ -438,7 +414,6 @@ const UserOrderDetails = () => {
                     />
                   </div>
 
-                  {/* Submit button with matching button styling from Address component */}
                   <button
                     onClick={rating >= 1 ? reviewHandler : null}
                     className={`w-[210px] h-[50px] mx-auto flex items-center justify-center text-[#50007a] border-2 font-semibold border-[#50007a] rounded-md cursor-pointer mt-4 hover:border-red-900 hover:text-red-900 hover:scale-105 duration-300 ${

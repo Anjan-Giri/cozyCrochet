@@ -26,7 +26,6 @@ const AllProducts = () => {
       await dispatch(deleteProduct(id));
 
       window.location.reload();
-      // dispatch(getAllProductsShop()); // or whatever action you use to fetch products
     } catch (error) {
       console.error("Error deleting product:", error);
     }

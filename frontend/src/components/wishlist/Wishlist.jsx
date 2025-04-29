@@ -35,7 +35,6 @@ const Wishlist = ({ setOpenWishlist }) => {
     }
   };
 
-  // Safely get wishlist items
   const wishlistItems = wishlist && wishlist.items ? wishlist.items : [];
 
   return (

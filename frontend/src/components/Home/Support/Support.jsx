@@ -40,7 +40,6 @@ const Support = () => {
   const getAvatarUrl = (shop) => {
     if (!shop.avatar) return "/default-avatar.png";
 
-    // If the avatar is already a full URL
     if (
       typeof shop.avatar === "string" &&
       (shop.avatar.startsWith("http://") || shop.avatar.startsWith("https://"))
@@ -48,17 +47,13 @@ const Support = () => {
       return shop.avatar;
     }
 
-    // If avatar is an object with url property
     const avatarPath =
       typeof shop.avatar === "object" ? shop.avatar.url : shop.avatar;
 
-    // Clean up the path and ensure it starts with /uploads
     const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
 
-    // Use the base URL without /api/v2
     const baseUrl = backend_url.replace("/api/v2", "");
 
-    // Construct the full URL
     return `${baseUrl}uploads/${cleanPath}`;
   };
 

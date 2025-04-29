@@ -28,8 +28,6 @@ const RegisterShop = () => {
 
     const newForm = new FormData();
 
-    // const config = { headers: { "Content-Type": "multipart/form-data" } };
-
     newForm.append("name", name);
     newForm.append("email", email);
     newForm.append("password", password);

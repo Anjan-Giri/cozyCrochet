@@ -29,7 +29,6 @@ const AllOrders = () => {
       headerName: "Status",
       minWidth: 130,
       flex: 0.7,
-      // Remove cellClassName and use a custom cell rendering if needed
       renderCell: (params) => {
         const status = params.row.status;
         return (

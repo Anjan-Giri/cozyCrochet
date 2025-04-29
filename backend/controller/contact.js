@@ -15,7 +15,7 @@ const verifyCaptcha = async (token) => {
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
     const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
 
-    // Use proper method for reCAPTCHA verification
+    //reCAPTCHA verification
     const response = await axios.post(verifyUrl, null, {
       params: {
         secret: secretKey,
@@ -30,12 +30,12 @@ const verifyCaptcha = async (token) => {
   }
 };
 
-// Get all shops for the contact form dropdown
+//get all shops for the contact form dropdown
 router.get(
   "/get-shops-for-contact",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Get all shops with just the necessary fields for the dropdown
+      //getting all shops
       const shops = await Shop.find().select("name _id");
 
       res.status(200).json({
@@ -48,7 +48,7 @@ router.get(
   })
 );
 
-// Submit contact form to a specific shop
+//submit contact form to a shop
 router.post(
   "/contact-shop",
   isAuthenticatedUser,
@@ -56,21 +56,18 @@ router.post(
     try {
       const { shopId, subject, message, orderDetails } = req.body;
 
-      // Validate required fields
       if (!shopId || !subject || !message) {
         return next(
           new ErrorHandler("Please provide shop, subject and message", 400)
         );
       }
 
-      // Find the shop to get their email
       const shop = await Shop.findById(shopId);
 
       if (!shop) {
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Format the order details if provided
       let orderDetailsText = "";
       if (orderDetails) {
         orderDetailsText = `
@@ -80,7 +77,6 @@ router.post(
         `;
       }
 
-      // Prepare message for the shop
       const messageToShop = `
         A customer has contacted you via the cozyCrochet marketplace:
         
@@ -95,15 +91,13 @@ router.post(
         You can reply directly to the customer by responding to this email.
       `;
 
-      // Send email to shop
       await sendMail({
         email: shop.email,
         subject: `[cozyCrochet] Custom Order Request: ${subject}`,
         message: messageToShop,
-        replyTo: req.user.email, // So the shop can reply directly to the user
+        replyTo: req.user.email,
       });
 
-      // Send confirmation to the user
       const confirmationToUser = `
         Your message has been sent to ${shop.name}!
         
@@ -136,14 +130,13 @@ router.post(
   })
 );
 
-// Public contact form (doesn't require login)
+//public contact form (no login)
 router.post(
   "/contact-shop-public",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { shopId, name, email, subject, message, orderDetails } = req.body;
 
-      // Validate required fields
       if (!shopId || !name || !email || !subject || !message) {
         return next(
           new ErrorHandler(
@@ -154,7 +147,7 @@ router.post(
       }
 
       const { captchaToken } = req.body;
-      // Verify captcha for non-authenticated users
+      //verify captcha for non-authenticated users
       const isCaptchaValid = await verifyCaptcha(captchaToken);
       if (!isCaptchaValid) {
         return next(
@@ -165,20 +158,17 @@ router.post(
         );
       }
 
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return next(new ErrorHandler("Please provide a valid email", 400));
       }
 
-      // Find the shop to get their email
       const shop = await Shop.findById(shopId);
 
       if (!shop) {
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Format the order details if provided
       let orderDetailsText = "";
       if (orderDetails) {
         orderDetailsText = `
@@ -188,7 +178,6 @@ router.post(
         `;
       }
 
-      // Prepare message for the shop
       const messageToShop = `
         A visitor has contacted you via the cozyCrochet marketplace:
         
@@ -203,15 +192,13 @@ router.post(
         You can reply directly to the customer by responding to this email.
       `;
 
-      // Send email to shop
       await sendMail({
         email: shop.email,
         subject: `[cozyCrochet] Contact Request: ${subject}`,
         message: messageToShop,
-        replyTo: email, // So the shop can reply directly to the user
+        replyTo: email,
       });
 
-      // Send confirmation to the user
       const confirmationToUser = `
         Your message has been sent to ${shop.name}!
         
@@ -244,7 +231,7 @@ router.post(
   })
 );
 
-// Get specific shop contact information
+//get specific shop contact information
 router.get(
   "/shop-contact-info/:shopId",
   catchAsyncErrors(async (req, res, next) => {
@@ -267,12 +254,12 @@ router.get(
   })
 );
 
-// Get admin contact information
+//get admin contact information
 router.get(
   "/admin-contact-info",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Get the first admin (assuming there's only one or using the first one as main contact)
+      //get admin
       const admin = await Admin.findOne().select("name email");
 
       if (!admin) {
@@ -289,7 +276,7 @@ router.get(
   })
 );
 
-// Submit contact form to admin (authenticated users)
+//submit contact form to admin (authenticated users)
 router.post(
   "/contact-admin",
   isAuthenticatedUser,
@@ -297,27 +284,23 @@ router.post(
     try {
       const { subject, message, category } = req.body;
 
-      // Validate required fields
       if (!subject || !message) {
         return next(
           new ErrorHandler("Please provide subject and message", 400)
         );
       }
 
-      // Get admin email
       const admin = await Admin.findOne();
 
       if (!admin) {
         return next(new ErrorHandler("Admin not found", 404));
       }
 
-      // Prepare category text if provided
       let categoryText = "";
       if (category) {
         categoryText = `Category: ${category}`;
       }
 
-      // Prepare message for the admin
       const messageToAdmin = `
         A user has submitted a contact form through the cozyCrochet marketplace:
         
@@ -332,15 +315,13 @@ router.post(
         You can reply directly to the user by responding to this email.
       `;
 
-      // Send email to admin
       await sendMail({
         email: admin.email,
         subject: `[cozyCrochet] Contact Form: ${subject}`,
         message: messageToAdmin,
-        replyTo: req.user.email, // So the admin can reply directly to the user
+        replyTo: req.user.email,
       });
 
-      // Send confirmation to the user
       const confirmationToUser = `
         Your message has been sent to the cozyCrochet Admin Team!
         
@@ -376,14 +357,13 @@ router.post(
   })
 );
 
-// Public contact form for admin (doesn't require login)
+//public contact form for admin (no login)
 router.post(
   "/contact-admin-public",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { name, email, subject, message, category } = req.body;
 
-      // Validate required fields
       if (!name || !email || !subject || !message) {
         return next(
           new ErrorHandler(
@@ -394,7 +374,7 @@ router.post(
       }
 
       const { captchaToken } = req.body;
-      // Verify captcha for non-authenticated users
+      //verify captcha
       const isCaptchaValid = await verifyCaptcha(captchaToken);
       if (!isCaptchaValid) {
         return next(
@@ -405,26 +385,22 @@ router.post(
         );
       }
 
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return next(new ErrorHandler("Please provide a valid email", 400));
       }
 
-      // Get admin email
       const admin = await Admin.findOne();
 
       if (!admin) {
         return next(new ErrorHandler("Admin not found", 404));
       }
 
-      // Prepare category text if provided
       let categoryText = "";
       if (category) {
         categoryText = `Category: ${category}`;
       }
 
-      // Prepare message for the admin
       const messageToAdmin = `
         A visitor has submitted a contact form through the cozyCrochet marketplace:
         
@@ -439,15 +415,13 @@ router.post(
         You can reply directly to the sender by responding to this email.
       `;
 
-      // Send email to admin
       await sendMail({
         email: admin.email,
         subject: `[cozyCrochet] Contact Form: ${subject}`,
         message: messageToAdmin,
-        replyTo: email, // So the admin can reply directly to the sender
+        replyTo: email,
       });
 
-      // Send confirmation to the user
       const confirmationToUser = `
         Your message has been sent to the cozyCrochet Admin Team!
         

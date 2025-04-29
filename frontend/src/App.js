@@ -86,7 +86,6 @@ const App = () => {
     getStripeApikey();
   }, []);
 
-  // This will still show empty initially, but the log inside useEffect will show the updated value
   console.log("Current Stripe Api Key value:", stripeApikey);
 
   useEffect(() => {

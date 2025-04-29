@@ -50,44 +50,11 @@ const ProfileC = ({ active }) => {
     dispatch(updateUserInfo(email, password, phoneNumber, name));
   };
 
-  // const getAvatarUrl = () => {
-  //   if (!user || !user.avatar) return "/default-avatar.png";
-
-  //   // If avatar is an object with a URL property
-  //   if (typeof user.avatar === "object" && user.avatar.url) {
-  //     return user.avatar.url.startsWith("http")
-  //       ? user.avatar.url
-  //       : `${backend_url
-  //           .replace("/api/v2", "")
-  //           .replace(/\/$/, "")}/uploads/${user.avatar.url.replace(
-  //           /^\/?(uploads\/)?/,
-  //           ""
-  //         )}`;
-  //   }
-
-  //   // If avatar is a string
-  //   if (typeof user.avatar === "string") {
-  //     return user.avatar.startsWith("http")
-  //       ? user.avatar
-  //       : `${backend_url
-  //           .replace("/api/v2", "")
-  //           .replace(/\/$/, "")}/uploads/${user.avatar.replace(
-  //           /^\/?(uploads\/)?/,
-  //           ""
-  //         )}`;
-  //   }
-
-  //   return "/default-avatar.png";
-  // };
-
   const getAvatarUrl = () => {
     if (!user || !user.avatar) return "/default-avatar.png";
 
-    // If avatar is an object with a URL property
     if (typeof user.avatar === "object" && user.avatar.url) {
-      // For URLs that are just filenames stored on your backend
       if (!user.avatar.url.startsWith("http")) {
-        // Get the base URL of your backend without the API path
         const baseUrl = backend_url.split("/api")[0];
         return `${baseUrl}/uploads/${user.avatar.url}`;
       }
@@ -278,7 +245,6 @@ const AllOrders = () => {
       headerName: "Status",
       minWidth: 130,
       flex: 0.7,
-      // Remove cellClassName and use a custom cell rendering if needed
       renderCell: (params) => {
         const status = params.row.status;
         return (
@@ -363,7 +329,6 @@ const TrackOrder = () => {
       headerName: "Status",
       minWidth: 130,
       flex: 0.7,
-      // Remove cellClassName and use a custom cell rendering if needed
       renderCell: (params) => {
         const status = params.row.status;
         return (

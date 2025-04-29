@@ -44,16 +44,14 @@ const Header = ({ activeHeading }) => {
 
   const dispatch = useDispatch();
 
-  // Fetch categories when component mounts
   useEffect(() => {
     dispatch(getAllCategories());
   }, [dispatch]);
 
-  // Format categories for dropdown
   const formattedCategories =
     categories?.map((category) => ({
-      title: category, // Use the category name as the title
-      image_Url: null, // We don't have images for categories, so we'll use the default icon
+      title: category,
+      image_Url: null,
     })) || [];
 
   // Debounce function to limit API calls
@@ -69,7 +67,6 @@ const Header = ({ activeHeading }) => {
     };
   };
 
-  // Function to fetch search results
   const fetchSearchResults = async (term) => {
     try {
       setLoading(true);
@@ -83,7 +80,6 @@ const Header = ({ activeHeading }) => {
     }
   };
 
-  // Debounced version of the search function
   const debouncedSearch = debounce(fetchSearchResults, 500);
 
   const handleSearch = (e) => {
@@ -91,7 +87,6 @@ const Header = ({ activeHeading }) => {
     setSearchTerm(term);
 
     if (term.length >= 2) {
-      // Only search if 2 or more characters
       debouncedSearch(term);
     } else {
       setSearchData(null);
@@ -106,7 +101,6 @@ const Header = ({ activeHeading }) => {
     }
   });
 
-  // Helper function to get proper image URL
   const getImageUrl = (image) => {
     if (!image) return "/no-image.png";
     if (imageError) return "/no-image.png";
@@ -123,12 +117,9 @@ const Header = ({ activeHeading }) => {
     return `${baseUrl}/uploads/${cleanImagePath}`;
   };
 
-  // First, update your getUserAvatarUrl function
   const getUserAvatarUrl = () => {
-    // Return default avatar immediately if user or avatar doesn't exist
     if (!user || !user.avatar) return "/default-avatar.png";
 
-    // Handle case where avatar might be an object with a URL property
     if (typeof user.avatar === "object" && user.avatar.url) {
       return user.avatar.url.startsWith("http")
         ? user.avatar.url
@@ -140,7 +131,6 @@ const Header = ({ activeHeading }) => {
           )}`;
     }
 
-    // Handle case where avatar is a string
     if (typeof user.avatar === "string") {
       return user.avatar.startsWith("http")
         ? user.avatar
@@ -152,7 +142,6 @@ const Header = ({ activeHeading }) => {
           )}`;
     }
 
-    // Fallback to default avatar for any other case
     return "/default-avatar.png";
   };
 

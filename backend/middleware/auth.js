@@ -44,7 +44,6 @@ exports.isAdmin = catchAsyncErrors(async (req, res, next) => {
 
   const decoded = jwt.verify(admin_token, process.env.JWT_SECRET_KEY);
 
-  // Make sure Admin model is imported at the top
   req.admin = await Admin.findById(decoded.id);
 
   if (!req.admin || req.admin.role !== "admin") {

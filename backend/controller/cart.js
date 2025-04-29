@@ -38,7 +38,7 @@ router.get(
   })
 );
 
-// update cart item quantity - CORRECTED ROUTE
+//update cart item quantity
 router.put(
   "/update-quantity",
   isAuthenticatedUser,
@@ -58,7 +58,7 @@ router.put(
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Validate stock
+      //validate stock
       if (quantity > product.stock) {
         return next(new ErrorHandler("Insufficient product stock", 400));
       }
@@ -88,7 +88,7 @@ router.put(
   })
 );
 
-// remove item from cart - CORRECTED ROUTE
+//remove item from cart
 router.delete(
   "/remove/:productId",
   isAuthenticatedUser,
@@ -123,7 +123,7 @@ router.delete(
   })
 );
 
-// add to cart - CORRECTED ROUTE
+//add to cart
 router.post(
   "/add",
   isAuthenticatedUser,
@@ -132,18 +132,18 @@ router.post(
       const { productId, quantity = 1 } = req.body;
       const userId = req.user.id;
 
-      // Check if product exists
+      //checking product exists or not
       const product = await Product.findById(productId);
       if (!product) {
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Check stock availability
+      //checking stock
       if (quantity > product.stock) {
         return next(new ErrorHandler("Insufficient product stock", 400));
       }
 
-      // Find existing cart or create new
+      //existing cart or create new
       let cart = await Cart.findOne({ user: userId });
 
       if (!cart) {
@@ -153,16 +153,14 @@ router.post(
         });
       }
 
-      // Check if product already in cart
+      //checking if product is in cart
       const existingItemIndex = cart.items.findIndex(
         (item) => item.product.toString() === productId
       );
 
       if (existingItemIndex > -1) {
-        // Update quantity of existing item
         cart.items[existingItemIndex].quantity += quantity;
       } else {
-        // Add new item to cart
         cart.items.push({
           product: productId,
           quantity: quantity,
@@ -186,7 +184,7 @@ router.post(
   })
 );
 
-// cart clear
+//cart clear
 router.delete(
   "/clear",
   isAuthenticatedUser,
@@ -200,7 +198,6 @@ router.delete(
         return next(new ErrorHandler("Cart not found", 404));
       }
 
-      // Empty the items array
       cart.items = [];
       await cart.save();
 

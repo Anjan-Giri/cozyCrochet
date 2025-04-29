@@ -32,7 +32,7 @@ router.get(
   })
 );
 
-// Add to wishlist - changed from /add to /create
+//add to wishlist
 router.post(
   "/create",
   isAuthenticatedUser,
@@ -41,13 +41,11 @@ router.post(
       const { productId } = req.body;
       const userId = req.user.id;
 
-      // Check if product exists
       const product = await Product.findById(productId);
       if (!product) {
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Find existing wishlist or create new
       let wishlist = await Wishlist.findOne({ user: userId });
 
       if (!wishlist) {
@@ -57,13 +55,11 @@ router.post(
         });
       }
 
-      // Check if product already in wishlist
       const existingItemIndex = wishlist.items.findIndex(
         (item) => item.product.toString() === productId
       );
 
       if (existingItemIndex === -1) {
-        // Add new item to wishlist
         wishlist.items.push({ product: productId });
         await wishlist.save();
       }
@@ -82,7 +78,7 @@ router.post(
   })
 );
 
-// Remove item from wishlist - changed from /remove/:productId to /delete/:productId
+//remove from wishlist
 router.delete(
   "/delete/:productId",
   isAuthenticatedUser,

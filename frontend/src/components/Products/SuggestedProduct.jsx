@@ -2,18 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import ProductCard from "../Home/ProductCard/ProductCard";
 import styles from "../../styles/styles";
-import { productData } from "../../stat/data";
 
 const SuggestedProduct = ({ data }) => {
   const { allProducts } = useSelector((state) => state.products);
   const [products, setProducts] = useState(null);
-  // const [data, setData] = useState([]);
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
-      // Map to track products per shop
       const shopProducts = new Map();
 
-      // Group products by shop
       allProducts.forEach((product) => {
         if (!shopProducts.has(product.shopId)) {
           shopProducts.set(product.shopId, []);

@@ -23,7 +23,6 @@ const ShopSettings = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Clear messages when component mounts
     dispatch({ type: "clearMessages" });
     dispatch({ type: "clearErrors" });
   }, [dispatch]);

@@ -72,7 +72,6 @@ const AdminOrders = () => {
         { withCredentials: true }
       );
       toast.success("Order status updated successfully");
-      // Update the order status in the local state
       setOrders(
         orders.map((order) =>
           order._id === orderId ? { ...order, status } : order
@@ -85,13 +84,13 @@ const AdminOrders = () => {
     }
   };
 
-  // Format date
+  //format date
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  // Format NPR currency
+  //format NPR currency
   const formatNPR = (amount) => {
     return `Nrs. ${Number(amount).toLocaleString("en-IN")}`;
   };

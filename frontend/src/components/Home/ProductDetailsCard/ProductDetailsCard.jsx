@@ -94,7 +94,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   const addToCartHandler = (id) => {
-    // Check if cart items exist and is an array
     const itemExists = cart?.items
       ? cart.items.some((i) => i.product._id === id)
       : false;
@@ -112,7 +111,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   useEffect(() => {
-    // Check if item is in wishlist
     if (
       wishlist &&
       wishlist.items &&
@@ -134,14 +132,13 @@ const ProductDetailsCard = ({ setOpen, data }) => {
     dispatch(removeFromWishlist(data));
   };
 
-  // Fetch shop data and calculate ratings
+  //fetch shop data and calculate ratings
   useEffect(() => {
     const fetchShopData = async () => {
       if (data?.shop?._id) {
         try {
           setLoading(true);
 
-          // Fetch updated shop info
           const shopResponse = await axios.get(
             `${server}/shop/get-shop-info/${data.shop._id}`
           );
@@ -150,29 +147,24 @@ const ProductDetailsCard = ({ setOpen, data }) => {
             setShopData(shopResponse.data.shop);
           }
 
-          // Fetch all products for this specific shop to calculate ratings
           const productsResponse = await axios.get(
             `${server}/product/get-all-products-shop/${data.shop._id}`
           );
 
           if (productsResponse.data.success) {
-            // Count the products
             const productsArray = productsResponse.data.products || [];
             setShopProductCount(productsArray.length);
 
-            // Calculate total shop reviews by summing all product reviews
             let reviewCount = 0;
             let ratingSum = 0;
             let ratingCount = 0;
 
             productsArray.forEach((product) => {
-              // Count reviews
               const productReviews = product.reviews
                 ? product.reviews.length
                 : 0;
               reviewCount += productReviews;
 
-              // Sum ratings for average calculation
               if (product.reviews && product.reviews.length > 0) {
                 product.reviews.forEach((review) => {
                   if (review.rating) {
@@ -185,7 +177,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
 
             setShopTotalReviews(reviewCount);
 
-            // Calculate average rating (with 1 decimal place)
             const avgRating =
               ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
             setShopAverageRating(avgRating);

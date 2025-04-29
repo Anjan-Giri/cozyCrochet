@@ -15,12 +15,10 @@ const ProductPage = () => {
   const [activeFilter, setActiveFilter] = useState("default");
   const { allProducts } = useSelector((state) => state.products);
 
-  //filter by category
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
       let filteredProducts = [...allProducts];
 
-      // Filter by category if category parameter exists
       if (categoryParam) {
         filteredProducts = allProducts.filter(
           (product) => product.category === categoryParam
@@ -68,7 +66,7 @@ const ProductPage = () => {
         sortedData.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
         break;
       default:
-        // Default sorting - can be by relevance or whatever makes sense for your app
+        // Default sorting
         break;
     }
 

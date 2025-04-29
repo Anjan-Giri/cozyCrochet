@@ -26,11 +26,9 @@ const AdminSellers = () => {
   const [selectedShop, setSelectedShop] = useState(null);
   const navigate = useNavigate();
 
-  // Function to get proper avatar URL
   const getAvatarUrl = (avatar) => {
     if (!avatar) return null;
 
-    // If the avatar is already a full URL
     if (
       typeof avatar === "string" &&
       (avatar.startsWith("http://") || avatar.startsWith("https://"))
@@ -38,13 +36,10 @@ const AdminSellers = () => {
       return avatar;
     }
 
-    // If avatar is an object with url property
     const avatarPath = typeof avatar === "object" ? avatar.url : avatar;
 
-    // Remove any leading slashes and 'uploads/'
     const cleanPath = avatarPath.replace(/^\/?(uploads\/)?/, "");
 
-    // Construct the full URL using the backend_url
     return `${backend_url}uploads/${cleanPath}`;
   };
 

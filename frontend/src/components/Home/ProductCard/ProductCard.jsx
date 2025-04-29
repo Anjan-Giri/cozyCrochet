@@ -27,7 +27,6 @@ const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Change from wishlist.find to checking if wishlist exists and has items
     if (
       wishlist &&
       wishlist.items &&
@@ -57,7 +56,6 @@ const ProductCard = ({ data }) => {
   }, [data.images, imageError]);
 
   const addToCartHandler = (id) => {
-    // Check if cart items exist and is an array
     const itemExists = cart?.items
       ? cart.items.some((i) => i.product._id === id)
       : false;

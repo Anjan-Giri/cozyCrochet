@@ -37,7 +37,7 @@ const DashboardMain = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [salesByTime, setSalesByTime] = useState([]);
 
-  // Format NPR currency
+  //format NPR currency
   const formatNPR = (amount) => {
     return `NPR ${Number(amount).toLocaleString("en-IN")}`;
   };
@@ -49,26 +49,22 @@ const DashboardMain = () => {
     }
   }, [dispatch, seller]);
 
-  // Process order data for charts and recent orders
+  //order data for charts and recent orders
   useEffect(() => {
     if (orders && orders.length > 0) {
-      // Get most recent 5 orders
       const recent = [...orders]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
       setRecentOrders(recent);
 
-      // Generate weekly sales data
       const lastFourWeeks = generateWeeklyData(orders);
       setWeeklyStats(lastFourWeeks);
 
-      // Generate time-of-day sales data
       const timeData = generateTimeOfDaySales(orders);
       setSalesByTime(timeData);
     }
   }, [orders]);
 
-  // Generate category stats from products
   useEffect(() => {
     if (products && products.length > 0) {
       // Count products by category
@@ -80,14 +76,12 @@ const DashboardMain = () => {
           categoryCounts[product.category] =
             (categoryCounts[product.category] || 0) + 1;
 
-          // Calculate approximate value of inventory in this category
           const value = product.discountPrice || product.originalPrice || 0;
           categoryValues[product.category] =
             (categoryValues[product.category] || 0) + value;
         }
       });
 
-      // Convert to array format for chart
       const categoryStatsArray = Object.keys(categoryCounts).map(
         (category) => ({
           name: category,
@@ -97,17 +91,15 @@ const DashboardMain = () => {
         })
       );
 
-      // Sort by count and limit to top categories if needed
       const sortedStats = categoryStatsArray
         .sort((a, b) => b.count - a.count)
         .slice(0, 5); // Show top 5 categories
 
       setCategoryStats(sortedStats);
     } else {
-      // Fallback to sample data if no products
       const sampleCategories = categoriesData.slice(0, 5).map((cat, index) => ({
         name: cat.title,
-        count: 20 - index * 3, // Just sample values decreasing by category
+        count: 20 - index * 3,
         value: 100 - index * 15,
         inventoryValue: 1000 - index * 150,
       }));
@@ -115,7 +107,6 @@ const DashboardMain = () => {
     }
   }, [products]);
 
-  // Generate time-of-day sales breakdown
   const generateTimeOfDaySales = (orders) => {
     const timeSlots = [
       {
@@ -269,7 +260,6 @@ const DashboardMain = () => {
     });
   }
 
-  // Colors for charts - vibrant theme
   const COLORS = [
     "#f44336",
     "#2196f3",
@@ -431,7 +421,6 @@ const DashboardMain = () => {
             </Pie>
             <Tooltip
               formatter={(value, name, props) => {
-                // Safety check to make sure we have a valid index and category
                 if (
                   props &&
                   props.payload &&
@@ -446,13 +435,11 @@ const DashboardMain = () => {
                     name,
                   ];
                 }
-                // Return a fallback if we can't access the category data
                 return [value, name];
               }}
             />
             <Legend
               formatter={(value, entry, index) => {
-                // Safety check for index bounds
                 if (index >= 0 && index < categoryStats.length) {
                   return `${value} (${categoryStats[index].count} items)`;
                 }

@@ -8,7 +8,7 @@ const User = require("../model/user");
 const Product = require("../model/product");
 // const Order = require("../model/order");
 
-// Add a calendar event
+//add a calendar event
 router.post(
   "/add-event",
   isAuthenticatedUser,
@@ -20,7 +20,7 @@ router.post(
         return next(new ErrorHandler("Event type and date are required", 400));
       }
 
-      // Create the calendar event
+      //create the event
       const event = await CalendarEvent.create({
         userId: req.user.id,
         eventType,
@@ -28,7 +28,7 @@ router.post(
         relatedPerson: relatedPerson || "",
       });
 
-      // Add the event to the user's calendarEvents array
+      //add the event to array
       await User.findByIdAndUpdate(req.user.id, {
         $push: { calendarEvents: event._id },
       });
@@ -43,7 +43,7 @@ router.post(
   })
 );
 
-// Get all calendar events for a user
+//get all calendar events for a user
 router.get(
   "/events",
   isAuthenticatedUser,
@@ -61,7 +61,7 @@ router.get(
   })
 );
 
-// Update a calendar event
+//update calendar event
 router.put(
   "/update-event/:id",
   isAuthenticatedUser,
@@ -76,12 +76,12 @@ router.put(
         return next(new ErrorHandler("Event not found", 404));
       }
 
-      // Check if the event belongs to the user
+      //checking if the event belongs to the user
       if (event.userId !== req.user.id) {
         return next(new ErrorHandler("Unauthorized", 403));
       }
 
-      // Update event fields
+      //update event fields
       if (eventType) event.eventType = eventType;
       if (date) event.date = new Date(date);
       if (relatedPerson !== undefined) event.relatedPerson = relatedPerson;
@@ -98,7 +98,7 @@ router.put(
   })
 );
 
-// Delete a calendar event
+//delete event
 router.delete(
   "/delete-event/:id",
   isAuthenticatedUser,
@@ -112,17 +112,16 @@ router.delete(
         return next(new ErrorHandler("Event not found", 404));
       }
 
-      // Check if the event belongs to the user
       if (event.userId !== req.user.id) {
         return next(new ErrorHandler("Unauthorized", 403));
       }
 
-      // Remove event from user's calendarEvents array
+      //remove event
       await User.findByIdAndUpdate(req.user.id, {
         $pull: { calendarEvents: eventId },
       });
 
-      // Delete the event
+      //delete
       await CalendarEvent.findByIdAndDelete(eventId);
 
       res.status(200).json({
@@ -135,29 +134,28 @@ router.delete(
   })
 );
 
-// Get upcoming event recommendations (for next 2 weeks)
+//get upcoming event recommendations for next 2 weeks
 router.get(
   "/recommendations",
   isAuthenticatedUser,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Get current date and date 2 weeks from now
+      //current date and date 2 weeks from now
       const currentDate = new Date();
       const twoWeeksFromNow = new Date();
       twoWeeksFromNow.setDate(currentDate.getDate() + 14);
 
-      // Find events in the next 2 weeks
+      //events in the next 2 weeks
       const upcomingEvents = await CalendarEvent.find({
         userId: req.user.id,
         date: { $gte: currentDate, $lte: twoWeeksFromNow },
       });
 
-      // Array to hold recommendations
       const recommendations = [];
 
-      // Find matching products for each event
+      //matching products for each event
       for (const event of upcomingEvents) {
-        // Find products with matching tag
+        //products with matching tag
         const matchingProducts = await Product.find({
           tags: { $regex: event.eventType, $options: "i" },
         }).limit(10);

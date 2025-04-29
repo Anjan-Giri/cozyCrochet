@@ -39,11 +39,9 @@ const EditProduct = ({ visible, onClose, product }) => {
       toast.error(error);
     }
     if (success) {
-      // Only run this effect once when success becomes true
       const showToastAndReset = async () => {
         toast.success("Product updated successfully");
         onClose();
-        // Immediately dispatch an action to reset the success state
         dispatch({ type: "updateProductReset" });
       };
 
@@ -54,7 +52,6 @@ const EditProduct = ({ visible, onClose, product }) => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
 
-    // Validate file size and type
     const validFiles = files.filter((file) => {
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
       const maxSize = 5 * 1024 * 1024; // 5MB
@@ -82,18 +79,14 @@ const EditProduct = ({ visible, onClose, product }) => {
     if (!image?.url) return "/no-image.png";
     if (imageError[index]) return "/no-image.png";
 
-    // If it's already a full URL
     if (image.url.startsWith("http")) {
       return image.url;
     }
 
-    // Remove /api/v2 if present in backend_url
     const baseUrl = backend_url.replace("/api/v2", "").replace(/\/$/, "");
 
-    // Clean the image path
     const imagePath = image.url.replace(/^\/?(uploads\/)?/, "");
 
-    // Construct the final URL
     return `${baseUrl}/uploads/${imagePath}`;
   };
 
@@ -101,13 +94,11 @@ const EditProduct = ({ visible, onClose, product }) => {
     e.preventDefault();
 
     try {
-      // Validate required fields
       if (!name || !description || !category || !discountPrice || !stock) {
         toast.error("Please fill all required fields");
         return;
       }
 
-      // Validate prices
       if (originalPrice && Number(discountPrice) >= Number(originalPrice)) {
         toast.error("Discount price must be less than original price");
         return;
@@ -120,7 +111,6 @@ const EditProduct = ({ visible, onClose, product }) => {
         formData.append("images", image);
       });
 
-      // Append other fields
       formData.append("name", name);
       formData.append("description", description);
       formData.append("category", category);
@@ -130,7 +120,6 @@ const EditProduct = ({ visible, onClose, product }) => {
       formData.append("stock", stock);
       formData.append("shopId", product.shopId);
 
-      // Add existing images to keep
       if (oldImages.length > 0) {
         formData.append("oldImages", JSON.stringify(oldImages));
       }

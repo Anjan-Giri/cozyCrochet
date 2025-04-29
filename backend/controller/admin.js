@@ -14,52 +14,7 @@ const Order = require("../model/order.js");
 const router = express.Router();
 const sendAdminToken = require("../utils/adminToken");
 
-// Create a predefined admin (run once or through a script)
-// This is just for reference; you should create your admin through a secure method
-router.post(
-  "/create-admin",
-  upload.single("avatar"),
-  catchAsyncErrors(async (req, res, next) => {
-    try {
-      const { name, email, password } = req.body;
-
-      // Check if admin already exists
-      const adminExist = await Admin.findOne({ email });
-      if (adminExist) {
-        // Delete uploaded file if user exists
-        if (req.file) {
-          const filename = req.file.filename;
-          const filePath = `uploads/${filename}`;
-          fs.unlinkSync(filePath);
-        }
-        return next(new ErrorHandler("Admin already exists", 400));
-      }
-
-      if (!req.file) {
-        return next(new ErrorHandler("Please upload avatar image", 400));
-      }
-
-      const filename = req.file.filename;
-      const fileUrl = filename;
-
-      const admin = await Admin.create({
-        name,
-        email,
-        password,
-        avatar: {
-          url: fileUrl,
-          public_id: filename,
-        },
-      });
-
-      sendAdminToken(admin, 201, res);
-    } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
-    }
-  })
-);
-
-// Login admin
+//login admin
 router.post(
   "/login-admin",
   catchAsyncErrors(async (req, res, next) => {
@@ -89,7 +44,7 @@ router.post(
   })
 );
 
-// Admin logout
+//admin logout
 router.get(
   "/logout",
   isAdmin,
@@ -110,17 +65,17 @@ router.get(
   })
 );
 
-// Get admin details
+//get admin details
 router.get(
   "/admin-details",
   isAdmin,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      console.log("Admin ID from token:", req.admin.id); // Debug log
+      console.log("Admin ID from token:", req.admin.id);
       const admin = await Admin.findById(req.admin.id);
 
       if (!admin) {
-        console.log("Admin not found in database"); // Debug log
+        console.log("Admin not found in database");
         return next(new ErrorHandler("Admin not found", 404));
       }
 
@@ -129,13 +84,13 @@ router.get(
         admin,
       });
     } catch (error) {
-      console.error("Admin details error:", error); // Detailed error log
+      console.error("Admin details error:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   })
 );
 
-// Get all users
+//get all users
 router.get(
   "/all-users",
   isAdmin,
@@ -153,7 +108,7 @@ router.get(
   })
 );
 
-// Delete a user
+//delete a user
 router.delete(
   "/delete-user/:id",
   isAdmin,
@@ -165,7 +120,6 @@ router.delete(
         return next(new ErrorHandler("User not found", 404));
       }
 
-      // Delete user avatar if exists
       if (user.avatar && user.avatar.public_id) {
         const filePath = `uploads/${user.avatar.public_id}`;
         if (fs.existsSync(filePath)) {
@@ -185,7 +139,7 @@ router.delete(
   })
 );
 
-// Get all shops
+//get all shops
 router.get(
   "/all-shops",
   isAdmin,
@@ -203,7 +157,7 @@ router.get(
   })
 );
 
-// Delete a shop
+//delete a shop
 router.delete(
   "/delete-shop/:id",
   isAdmin,
@@ -215,7 +169,6 @@ router.delete(
         return next(new ErrorHandler("Shop not found", 404));
       }
 
-      // Delete shop avatar if exists
       if (shop.avatar && shop.avatar.public_id) {
         const filePath = `uploads/${shop.avatar.public_id}`;
         if (fs.existsSync(filePath)) {
@@ -223,7 +176,6 @@ router.delete(
         }
       }
 
-      // Optional: Delete all products associated with this shop
       await Product.deleteMany({ shopId: req.params.id });
 
       await Shop.findByIdAndDelete(req.params.id);
@@ -238,7 +190,7 @@ router.delete(
   })
 );
 
-// Get all products
+//get all products
 router.get(
   "/all-products",
   isAdmin,
@@ -256,7 +208,7 @@ router.get(
   })
 );
 
-// Delete a product
+//delete a product
 router.delete(
   "/delete-product/:id",
   isAdmin,
@@ -268,7 +220,6 @@ router.delete(
         return next(new ErrorHandler("Product not found", 404));
       }
 
-      // Delete product images
       for (let i = 0; i < product.images.length; i++) {
         const filename = product.images[i].url.split("/").pop();
         const filePath = `uploads/${filename}`;
@@ -289,7 +240,7 @@ router.delete(
   })
 );
 
-// Get all orders
+//get all orders
 router.get(
   "/all-orders",
   isAdmin,
@@ -307,7 +258,7 @@ router.get(
   })
 );
 
-// Update order status
+//update order status
 router.put(
   "/update-order-status/:id",
   isAdmin,
@@ -341,56 +292,55 @@ router.put(
   })
 );
 
-// Get dashboard stats
+//get dashboard stats
 router.get(
   "/dashboard-stats",
   isAdmin,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      // Basic counts
+      //basic counts
       const userCount = await User.countDocuments();
       const shopCount = await Shop.countDocuments();
       const productCount = await Product.countDocuments();
       const orderCount = await Order.countDocuments();
 
-      // Calculate total revenue from ALL orders, not just delivered ones
+      //total revenue from all orders
       const allOrders = await Order.find();
       const totalRevenue = allOrders.reduce(
         (acc, order) => acc + (order.totalPrice || 0),
         0
       );
 
-      // Get recent orders (last 10) - increasing the number to have more data for time-of-day chart
+      //recent orders (last 10)
       const recentOrders = await Order.find()
         .sort({ createdAt: -1 })
-        .limit(10) // Increased from 5 to 10 for better time of day data
+        .limit(10)
         .populate("user", "name");
 
-      // Monthly revenue statistics - last 12 months with all months included
+      //monthly revenue statistics - last 12 months
       const today = new Date();
       const twelveMonthsAgo = new Date(today);
       twelveMonthsAgo.setMonth(today.getMonth() - 12);
 
-      // First get all months in the period to ensure we have all months
+      //get all months
       const allMonths = [];
       for (let i = 0; i < 12; i++) {
         const date = new Date(today);
         date.setMonth(today.getMonth() - i);
         allMonths.push({
-          month: date.getMonth() + 1, // 1-12
+          month: date.getMonth() + 1,
           year: date.getFullYear(),
           name: date.toLocaleString("default", { month: "short" }),
-          total: 0, // Initialize to 0
+          total: 0,
           count: 0,
         });
       }
 
-      // Get actual order data - include ALL orders, not just delivered
+      //get actual order data
       const monthlyOrderData = await Order.aggregate([
         {
           $match: {
             createdAt: { $gte: twelveMonthsAgo },
-            // Remove status filter to count all orders
           },
         },
         {
@@ -405,7 +355,7 @@ router.get(
         },
       ]);
 
-      // Merge the actual data with all months
+      //merge the actual data with all months
       const monthlyRevenue = allMonths
         .map((month) => {
           const found = monthlyOrderData.find(
@@ -422,10 +372,10 @@ router.get(
         })
         .reverse(); // Show oldest to newest
 
-      // Get all orders for time of day analysis
+      //get all orders for time of day analysis
       const allOrdersForTimeAnalysis = await Order.find()
         .sort({ createdAt: -1 })
-        .limit(100); // Get a good sample size for time analysis
+        .limit(100);
 
       res.status(200).json({
         success: true,

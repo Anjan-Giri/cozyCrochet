@@ -25,13 +25,11 @@ const CreateProductComp = () => {
     e.preventDefault();
 
     try {
-      // Validate required fields
       if (!name || !description || !category || !discountPrice || !stock) {
         toast.error("Please fill all required fields");
         return;
       }
 
-      // Validate prices
       if (originalPrice && Number(discountPrice) >= Number(originalPrice)) {
         toast.error("Discount price must be less than original price");
         return;
@@ -39,12 +37,10 @@ const CreateProductComp = () => {
 
       const formData = new FormData();
 
-      // Append images
       images.forEach((image) => {
         formData.append("images", image);
       });
 
-      // Append other fields
       formData.append("name", name);
       formData.append("description", description);
       formData.append("category", category);
@@ -74,7 +70,6 @@ const CreateProductComp = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
 
-    // Validate file size and type
     const validFiles = files.filter((file) => {
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
       const maxSize = 5 * 1024 * 1024; // 5MB

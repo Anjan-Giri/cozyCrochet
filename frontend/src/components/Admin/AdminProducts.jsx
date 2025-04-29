@@ -104,7 +104,6 @@ const AdminProducts = () => {
       return imageUrl;
     }
 
-    // Parse the base URL from server
     const baseUrl = server.replace("/api/v2", "").replace(/\/$/, "");
     const imagePath = imageUrl.replace(/^\/?(uploads\/)?/, "");
 

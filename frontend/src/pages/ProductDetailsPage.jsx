@@ -19,7 +19,6 @@ const ProductDetailsPage = () => {
 
   const { allProducts, isLoading } = useSelector((state) => state.products);
 
-  // Normalize product name for comparison
   const normalizeProductName = useCallback((productName) => {
     return productName
       .replace(/[^a-zA-Z0-9]/g, " ")
@@ -35,7 +34,6 @@ const ProductDetailsPage = () => {
 
         const normalizedSearchName = normalizeProductName(name);
 
-        // First try to find in Redux store
         if (allProducts?.length) {
           const matchedProduct = allProducts.find(
             (product) =>
@@ -49,27 +47,24 @@ const ProductDetailsPage = () => {
           }
         }
 
-        // If not in Redux or Redux is empty, fetch from API
         const response = await axios.get(
           `${server}/product/search/${encodeURIComponent(
             name.replace(/-+/g, " ").trim()
           )}`,
           {
-            timeout: 5000, // 5 second timeout
+            timeout: 5000,
           }
         );
 
         if (response.data.success && response.data.products?.length > 0) {
           const productData = response.data.products[0];
 
-          // Validate essential data
           if (!productData.name || !productData.images) {
             throw new Error("Invalid product data received");
           }
 
           setData(productData);
 
-          // Update Redux store in background
           dispatch(getAllProducts());
         } else {
           throw new Error("Product not found");
@@ -92,7 +87,6 @@ const ProductDetailsPage = () => {
     }
   }, [dispatch, name, allProducts, normalizeProductName]);
 
-  // Show loading state
   if (loading || isLoading) {
     return (
       <div>
@@ -105,7 +99,6 @@ const ProductDetailsPage = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div>
@@ -121,7 +114,6 @@ const ProductDetailsPage = () => {
     );
   }
 
-  // Show not found state
   if (!data) {
     return (
       <div>
@@ -139,7 +131,6 @@ const ProductDetailsPage = () => {
     );
   }
 
-  // Show product details
   return (
     <div>
       <Header />

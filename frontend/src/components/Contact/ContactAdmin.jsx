@@ -14,7 +14,6 @@ const ContactAdmin = () => {
   const [adminInfo, setAdminInfo] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
 
-  // Contact form categories
   const categories = [
     "General Inquiry",
     "Technical Support",
@@ -25,14 +24,14 @@ const ContactAdmin = () => {
     "Other",
   ];
 
-  // Form data for authenticated users
+  //form data for authenticated users
   const [formData, setFormData] = useState({
     subject: "",
     message: "",
     category: "General Inquiry",
   });
 
-  // Form data for non-authenticated users
+  //form data for non-authenticated users
   const [guestFormData, setGuestFormData] = useState({
     name: "",
     email: "",
@@ -93,7 +92,6 @@ const ContactAdmin = () => {
       setLoading(true);
 
       if (isAuthenticated) {
-        // Submit authenticated user form
         const { data } = await axios.post(
           `${server}/contact/contact-admin`,
           formData,
@@ -106,7 +104,6 @@ const ContactAdmin = () => {
           category: "General Inquiry",
         });
       } else {
-        // Submit guest form
         const { data } = await axios.post(
           `${server}/contact/contact-admin-public`,
           { ...guestFormData, captchaToken }
@@ -187,7 +184,6 @@ const ContactAdmin = () => {
 
         <div className="mt-6">
           <form onSubmit={handleSubmit}>
-            {/* Guest Contact Information (for non-authenticated users) */}
             {!isAuthenticated && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
@@ -354,7 +350,6 @@ const ContactAdmin = () => {
           </form>
         </div>
 
-        {/* Link to Contact Shop */}
         <div className="mt-8 text-center">
           <p className="text-gray-600">
             Looking to contact a specific shop instead?{" "}

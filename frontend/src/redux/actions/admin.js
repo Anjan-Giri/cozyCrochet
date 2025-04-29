@@ -1,14 +1,13 @@
 import axios from "axios";
 import { server } from "../../server";
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: server,
   withCredentials: true,
-  timeout: 5000, // 5 second timeout
+  timeout: 5000,
 });
 
-// Admin load action
+//admin load action
 export const loadAdmin = () => async (dispatch) => {
   try {
     dispatch({ type: "LoadAdminRequest" });
@@ -30,12 +29,11 @@ export const loadAdmin = () => async (dispatch) => {
   }
 };
 
-// Admin login action
+//admin login action
 export const loginAdmin = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: "LoadAdminRequest" });
 
-    // Add request logging
     console.log(`Sending POST request to: ${server}/admin/login-admin`);
 
     const { data } = await api.post("/admin/login-admin", {
@@ -43,7 +41,6 @@ export const loginAdmin = (email, password) => async (dispatch) => {
       password,
     });
 
-    // Log successful response (without sensitive data)
     console.log("Admin login successful");
 
     dispatch({
@@ -51,7 +48,6 @@ export const loginAdmin = (email, password) => async (dispatch) => {
       payload: data.admin,
     });
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message || error.message || "Failed to login";
 
@@ -68,12 +64,11 @@ export const loginAdmin = (email, password) => async (dispatch) => {
   }
 };
 
-// Admin logout action
+//admin logout action
 export const logoutAdmin = () => async (dispatch) => {
   try {
     dispatch({ type: "AdminLogoutRequest" });
 
-    // Add request logging
     console.log(`Sending GET request to: ${server}/admin/logout`);
 
     const { data } = await api.get("/admin/logout");
@@ -84,7 +79,6 @@ export const logoutAdmin = () => async (dispatch) => {
       type: "AdminLogoutSuccess",
     });
   } catch (error) {
-    // Enhanced error handling
     const errorMessage =
       error.response?.data?.message || error.message || "Failed to logout";
 
@@ -101,50 +95,50 @@ export const logoutAdmin = () => async (dispatch) => {
   }
 };
 
-// Update admin info (optional, may be needed for profile updates)
-export const updateAdminInfo = (name, email) => async (dispatch) => {
-  try {
-    dispatch({ type: "updateAdminInfoRequest" });
+//update admin info
+// export const updateAdminInfo = (name, email) => async (dispatch) => {
+//   try {
+//     dispatch({ type: "updateAdminInfoRequest" });
 
-    const adminData = {
-      name,
-      email,
-    };
+//     const adminData = {
+//       name,
+//       email,
+//     };
 
-    console.log("Sending admin update with:", {
-      ...adminData,
-    });
+//     console.log("Sending admin update with:", {
+//       ...adminData,
+//     });
 
-    const { data } = await axios.put(
-      `${server}/admin/update-admin`,
-      adminData,
-      {
-        withCredentials: true,
-      }
-    );
+//     const { data } = await axios.put(
+//       `${server}/admin/update-admin`,
+//       adminData,
+//       {
+//         withCredentials: true,
+//       }
+//     );
 
-    dispatch({
-      type: "updateAdminInfoSuccess",
-      payload: {
-        admin: data.admin,
-        successMessage: "Admin profile updated successfully",
-      },
-    });
-  } catch (error) {
-    console.error("Admin update error:", error.response?.data || error.message);
-    dispatch({
-      type: "updateAdminInfoFail",
-      payload: error.response?.data?.message || "Update failed",
-    });
-  }
-};
+//     dispatch({
+//       type: "updateAdminInfoSuccess",
+//       payload: {
+//         admin: data.admin,
+//         successMessage: "Admin profile updated successfully",
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Admin update error:", error.response?.data || error.message);
+//     dispatch({
+//       type: "updateAdminInfoFail",
+//       payload: error.response?.data?.message || "Update failed",
+//     });
+//   }
+// };
 
-// Clear errors
+//clear errors
 export const clearAdminErrors = () => async (dispatch) => {
   dispatch({ type: "clearAdminErrors" });
 };
 
-// Clear messages
+//clear messages
 export const clearAdminMessages = () => async (dispatch) => {
   dispatch({ type: "clearAdminMessages" });
 };

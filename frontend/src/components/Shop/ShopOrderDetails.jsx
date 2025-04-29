@@ -45,7 +45,6 @@ const ShopOrderDetails = () => {
         { withCredentials: true }
       );
       toast.success("Order status updated successfully!");
-      // Refresh order data
       if (seller?._id) {
         dispatch(getAllOrdersShop(seller._id));
       }
@@ -86,11 +85,10 @@ const ShopOrderDetails = () => {
     );
   }
 
-  // Function to get cart items regardless of data structure
   const getCartItems = () => {
     if (!data) return [];
 
-    // If cart is an array, use it directly
+    // If cart is an array
     if (Array.isArray(data.cart)) {
       return data.cart;
     }
@@ -100,13 +98,11 @@ const ShopOrderDetails = () => {
       return data.cart.items;
     }
 
-    // If none of the above, return empty array
     return [];
   };
 
   const cartItems = getCartItems();
 
-  // Get appropriate badge color for status
   const getStatusColor = (status) => {
     switch (status) {
       case "Processing":
@@ -126,7 +122,6 @@ const ShopOrderDetails = () => {
     }
   };
 
-  // Define order statuses in sequence
   const orderStatuses = [
     "Processing",
     "Transferred to delivery partner",
@@ -136,7 +131,6 @@ const ShopOrderDetails = () => {
     "Delivered",
   ];
 
-  // Get available next statuses based on current status
   const getAvailableStatuses = () => {
     const currentIndex = orderStatuses.indexOf(data.status);
     if (currentIndex === -1) return orderStatuses;
